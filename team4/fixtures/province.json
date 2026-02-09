@@ -1,281 +1,340 @@
 [
   {
-    "model": "team4.province",
-    "pk": 1,
-    "fields": {
-      "name_fa": "آذربایجان شرقی",
-      "name_en": "East Azarbaijan",
-      "location": "POINT(46.2682109 37.9035733)"
-    }
+    "province_id": 1,
+    "name_fa": "آذربایجان شرقی",
+    "name_en": "East Azarbaijan",
+    "location": {
+      "longitude": 46.2682109,
+      "latitude": 37.9035733
+    },
+    "created_at": "2026-02-08T17:29:15.968698+00:00",
+    "updated_at": "2026-02-08T17:29:15.968698+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 2,
-    "fields": {
-      "name_fa": "آذربایجان غربی",
-      "name_en": "Western Azerbaijan",
-      "location": "POINT(46.2682109 37.9035733)"
-    }
+    "province_id": 2,
+    "name_fa": "آذربایجان غربی",
+    "name_en": "Western Azerbaijan",
+    "location": {
+      "longitude": 46.2682109,
+      "latitude": 37.9035733
+    },
+    "created_at": "2026-02-08T17:29:15.975828+00:00",
+    "updated_at": "2026-02-08T17:29:15.975828+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 3,
-    "fields": {
-      "name_fa": "اردبیل",
-      "name_en": "Ardabil",
-      "location": "POINT(47.8911209 38.4853276)"
-    }
+    "province_id": 3,
+    "name_fa": "اردبیل",
+    "name_en": "Ardabil",
+    "location": {
+      "longitude": 47.8911209,
+      "latitude": 38.4853276
+    },
+    "created_at": "2026-02-08T17:29:15.981259+00:00",
+    "updated_at": "2026-02-08T17:29:15.981259+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 4,
-    "fields": {
-      "name_fa": "اصفهان",
-      "name_en": "Esfahan",
-      "location": "POINT(51.6679826 32.6546275)"
-    }
+    "province_id": 4,
+    "name_fa": "اصفهان",
+    "name_en": "Esfahan",
+    "location": {
+      "longitude": 51.6679826,
+      "latitude": 32.6546275
+    },
+    "created_at": "2026-02-08T17:29:15.993279+00:00",
+    "updated_at": "2026-02-08T17:29:15.993279+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 5,
-    "fields": {
-      "name_fa": "البرز",
-      "name_en": "Alborz",
-      "location": "POINT(50.9289246 35.9960467)"
-    }
+    "province_id": 5,
+    "name_fa": "البرز",
+    "name_en": "Alborz",
+    "location": {
+      "longitude": 50.9289246,
+      "latitude": 35.9960467
+    },
+    "created_at": "2026-02-08T17:29:16.000273+00:00",
+    "updated_at": "2026-02-08T17:29:16.000273+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 6,
-    "fields": {
-      "name_fa": "ایلام",
-      "name_en": "Ilam",
-      "location": "POINT(46.670534 33.2957618)"
-    }
+    "province_id": 6,
+    "name_fa": "ایلام",
+    "name_en": "Ilam",
+    "location": {
+      "longitude": 46.670534,
+      "latitude": 33.2957618
+    },
+    "created_at": "2026-02-08T17:29:16.006276+00:00",
+    "updated_at": "2026-02-08T17:29:16.006276+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 7,
-    "fields": {
-      "name_fa": "بوشهر",
-      "name_en": "Bushehr",
-      "location": "POINT(50.820314 28.9233837)"
-    }
+    "province_id": 7,
+    "name_fa": "بوشهر",
+    "name_en": "Bushehr",
+    "location": {
+      "longitude": 50.820314,
+      "latitude": 28.9233837
+    },
+    "created_at": "2026-02-08T17:29:16.012262+00:00",
+    "updated_at": "2026-02-08T17:29:16.012262+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 8,
-    "fields": {
-      "name_fa": "تهران",
-      "name_en": "Tehran",
-      "location": "POINT(51.423056 35.696111)"
-    }
+    "province_id": 8,
+    "name_fa": "تهران",
+    "name_en": "Tehran",
+    "location": {
+      "longitude": 51.423056,
+      "latitude": 35.696111
+    },
+    "created_at": "2026-02-08T17:29:16.019261+00:00",
+    "updated_at": "2026-02-08T17:29:16.019261+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 9,
-    "fields": {
-      "name_fa": "چهارمحال و بختیاری",
-      "name_en": "Chaharmahal and Bakhtiari",
-      "location": "POINT(50.8456323 31.9614348)"
-    }
+    "province_id": 9,
+    "name_fa": "چهارمحال و بختیاری",
+    "name_en": "Chaharmahal and Bakhtiari",
+    "location": {
+      "longitude": 50.8456323,
+      "latitude": 31.9614348
+    },
+    "created_at": "2026-02-08T17:29:16.025263+00:00",
+    "updated_at": "2026-02-08T17:29:16.025263+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 10,
-    "fields": {
-      "name_fa": "خراسان جنوبی",
-      "name_en": "South Khorasan",
-      "location": "POINT(59.1041758 32.5175643)"
-    }
+    "province_id": 10,
+    "name_fa": "خراسان جنوبی",
+    "name_en": "South Khorasan",
+    "location": {
+      "longitude": 59.1041758,
+      "latitude": 32.5175643
+    },
+    "created_at": "2026-02-08T17:29:16.030260+00:00",
+    "updated_at": "2026-02-08T17:29:16.030260+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 11,
-    "fields": {
-      "name_fa": "خراسان رضوی",
-      "name_en": "Khorasan Razavi",
-      "location": "POINT(59.1041758 32.5175643)"
-    }
+    "province_id": 11,
+    "name_fa": "خراسان رضوی",
+    "name_en": "Khorasan Razavi",
+    "location": {
+      "longitude": 59.1041758,
+      "latitude": 32.5175643
+    },
+    "created_at": "2026-02-08T17:29:16.036261+00:00",
+    "updated_at": "2026-02-08T17:29:16.036261+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 12,
-    "fields": {
-      "name_fa": "خراسان شمالی",
-      "name_en": "North Khorasan",
-      "location": "POINT(57.1013188 37.4710353)"
-    }
+    "province_id": 12,
+    "name_fa": "خراسان شمالی",
+    "name_en": "North Khorasan",
+    "location": {
+      "longitude": 57.1013188,
+      "latitude": 37.4710353
+    },
+    "created_at": "2026-02-08T17:29:16.043445+00:00",
+    "updated_at": "2026-02-08T17:29:16.043445+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 13,
-    "fields": {
-      "name_fa": "خوزستان",
-      "name_en": "Khuzestan",
-      "location": "POINT(49.041312 31.4360149)"
-    }
+    "province_id": 13,
+    "name_fa": "خوزستان",
+    "name_en": "Khuzestan",
+    "location": {
+      "longitude": 49.041312,
+      "latitude": 31.4360149
+    },
+    "created_at": "2026-02-08T17:29:16.049447+00:00",
+    "updated_at": "2026-02-08T17:29:16.049447+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 14,
-    "fields": {
-      "name_fa": "زنجان",
-      "name_en": "Zanjan",
-      "location": "POINT(48.3988186 36.5018185)"
-    }
+    "province_id": 14,
+    "name_fa": "زنجان",
+    "name_en": "Zanjan",
+    "location": {
+      "longitude": 48.3988186,
+      "latitude": 36.5018185
+    },
+    "created_at": "2026-02-08T17:29:16.057088+00:00",
+    "updated_at": "2026-02-08T17:29:16.057088+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 15,
-    "fields": {
-      "name_fa": "سمنان",
-      "name_en": "Semnan",
-      "location": "POINT(54.4342138 35.2255585)"
-    }
+    "province_id": 15,
+    "name_fa": "سمنان",
+    "name_en": "Semnan",
+    "location": {
+      "longitude": 54.4342138,
+      "latitude": 35.2255585
+    },
+    "created_at": "2026-02-08T17:29:16.063091+00:00",
+    "updated_at": "2026-02-08T17:29:16.063091+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 16,
-    "fields": {
-      "name_fa": "سیستان و بلوچستان",
-      "name_en": "Sistan and Baluchistan",
-      "location": "POINT(60.5820676 27.5299906)"
-    }
+    "province_id": 16,
+    "name_fa": "سیستان و بلوچستان",
+    "name_en": "Sistan and Baluchistan",
+    "location": {
+      "longitude": 60.5820676,
+      "latitude": 27.5299906
+    },
+    "created_at": "2026-02-08T17:29:16.070090+00:00",
+    "updated_at": "2026-02-08T17:29:16.070090+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 17,
-    "fields": {
-      "name_fa": "فارس",
-      "name_en": "Fars",
-      "location": "POINT(53.045893 29.1043813)"
-    }
+    "province_id": 17,
+    "name_fa": "فارس",
+    "name_en": "Fars",
+    "location": {
+      "longitude": 53.045893,
+      "latitude": 29.1043813
+    },
+    "created_at": "2026-02-08T17:29:16.077088+00:00",
+    "updated_at": "2026-02-08T17:29:16.077088+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 18,
-    "fields": {
-      "name_fa": "قزوین",
-      "name_en": "Qazvin",
-      "location": "POINT(49.8547266 36.0881317)"
-    }
+    "province_id": 18,
+    "name_fa": "قزوین",
+    "name_en": "Qazvin",
+    "location": {
+      "longitude": 49.8547266,
+      "latitude": 36.0881317
+    },
+    "created_at": "2026-02-08T17:29:16.084087+00:00",
+    "updated_at": "2026-02-08T17:29:16.084087+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 19,
-    "fields": {
-      "name_fa": "قم",
-      "name_en": "Qom",
-      "location": "POINT(50.8759419 34.6399443)"
-    }
+    "province_id": 19,
+    "name_fa": "قم",
+    "name_en": "Qom",
+    "location": {
+      "longitude": 50.8759419,
+      "latitude": 34.6399443
+    },
+    "created_at": "2026-02-08T17:29:16.090089+00:00",
+    "updated_at": "2026-02-08T17:29:16.090089+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 20,
-    "fields": {
-      "name_fa": "کردستان",
-      "name_en": "Kurdistan",
-      "location": "POINT(49.041312 31.4360149)"
-    }
+    "province_id": 20,
+    "name_fa": "کردستان",
+    "name_en": "Kurdistan",
+    "location": {
+      "longitude": 49.041312,
+      "latitude": 31.4360149
+    },
+    "created_at": "2026-02-08T17:29:16.096089+00:00",
+    "updated_at": "2026-02-08T17:29:16.096089+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 21,
-    "fields": {
-      "name_fa": "کرمان",
-      "name_en": "Kerman",
-      "location": "POINT(57.0833628 30.2839379)"
-    }
+    "province_id": 21,
+    "name_fa": "کرمان",
+    "name_en": "Kerman",
+    "location": {
+      "longitude": 57.0833628,
+      "latitude": 30.2839379
+    },
+    "created_at": "2026-02-08T17:29:16.103089+00:00",
+    "updated_at": "2026-02-08T17:29:16.103089+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 22,
-    "fields": {
-      "name_fa": "کرمانشاه",
-      "name_en": "Kermanshah",
-      "location": "POINT(47.065 34.314167)"
-    }
+    "province_id": 22,
+    "name_fa": "کرمانشاه",
+    "name_en": "Kermanshah",
+    "location": {
+      "longitude": 47.065,
+      "latitude": 34.314167
+    },
+    "created_at": "2026-02-08T17:29:16.110087+00:00",
+    "updated_at": "2026-02-08T17:29:16.110087+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 23,
-    "fields": {
-      "name_fa": "کهگیلویه و بویراحمد",
-      "name_en": "Kohgiloyeh Boyerahmad",
-      "location": "POINT(51.60525 30.6509479)"
-    }
+    "province_id": 23,
+    "name_fa": "کهگیلویه و بویراحمد",
+    "name_en": "Kohgiloyeh Boyerahmad",
+    "location": {
+      "longitude": 51.60525,
+      "latitude": 30.6509479
+    },
+    "created_at": "2026-02-08T17:29:16.117090+00:00",
+    "updated_at": "2026-02-08T17:29:16.117090+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 24,
-    "fields": {
-      "name_fa": "گلستان",
-      "name_en": "Golestan",
-      "location": "POINT(55.1375834 37.2898123)"
-    }
+    "province_id": 24,
+    "name_fa": "گلستان",
+    "name_en": "Golestan",
+    "location": {
+      "longitude": 55.1375834,
+      "latitude": 37.2898123
+    },
+    "created_at": "2026-02-08T17:29:16.123088+00:00",
+    "updated_at": "2026-02-08T17:29:16.123088+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 25,
-    "fields": {
-      "name_fa": "گیلان",
-      "name_en": "Gilan",
-      "location": "POINT(49.5924 37.2809)"
-    }
+    "province_id": 25,
+    "name_fa": "گیلان",
+    "name_en": "Gilan",
+    "location": {
+      "longitude": 49.5924,
+      "latitude": 37.2809
+    },
+    "created_at": "2026-02-08T17:29:16.129088+00:00",
+    "updated_at": "2026-02-08T17:29:16.129088+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 26,
-    "fields": {
-      "name_fa": "لرستان",
-      "name_en": "Lorestan",
-      "location": "POINT(49.041312 31.4360149)"
-    }
+    "province_id": 26,
+    "name_fa": "لرستان",
+    "name_en": "Lorestan",
+    "location": {
+      "longitude": 49.041312,
+      "latitude": 31.4360149
+    },
+    "created_at": "2026-02-08T17:29:16.135090+00:00",
+    "updated_at": "2026-02-08T17:29:16.135090+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 27,
-    "fields": {
-      "name_fa": "مازندران",
-      "name_en": "Mazandaran",
-      "location": "POINT(52.5318604 36.2262393)"
-    }
+    "province_id": 27,
+    "name_fa": "مازندران",
+    "name_en": "Mazandaran",
+    "location": {
+      "longitude": 52.5318604,
+      "latitude": 36.2262393
+    },
+    "created_at": "2026-02-08T17:29:16.141603+00:00",
+    "updated_at": "2026-02-08T17:29:16.141603+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 28,
-    "fields": {
-      "name_fa": "مرکزی",
-      "name_en": "Markazi",
-      "location": "POINT(49.8547 34.6123)"
-    }
+    "province_id": 28,
+    "name_fa": "مرکزی",
+    "name_en": "Markazi",
+    "location": {
+      "longitude": 49.8547,
+      "latitude": 34.6123
+    },
+    "created_at": "2026-02-08T17:29:16.146609+00:00",
+    "updated_at": "2026-02-08T17:29:16.146609+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 29,
-    "fields": {
-      "name_fa": "هرمزگان",
-      "name_en": "Hormozgan",
-      "location": "POINT(57.0833628 30.2839379)"
-    }
+    "province_id": 29,
+    "name_fa": "هرمزگان",
+    "name_en": "Hormozgan",
+    "location": {
+      "longitude": 57.0833628,
+      "latitude": 30.2839379
+    },
+    "created_at": "2026-02-08T17:29:16.153664+00:00",
+    "updated_at": "2026-02-08T17:29:16.153664+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 30,
-    "fields": {
-      "name_fa": "همدان",
-      "name_en": "Hamedan",
-      "location": "POINT(55.1375834 27.138723)"
-    }
+    "province_id": 30,
+    "name_fa": "همدان",
+    "name_en": "Hamedan",
+    "location": {
+      "longitude": 55.1375834,
+      "latitude": 27.138723
+    },
+    "created_at": "2026-02-08T17:29:16.159649+00:00",
+    "updated_at": "2026-02-08T17:29:16.159649+00:00"
   },
   {
-    "model": "team4.province",
-    "pk": 31,
-    "fields": {
-      "name_fa": "یزد",
-      "name_en": "Yazd",
-      "location": null
-    }
+    "province_id": 31,
+    "name_fa": "یزد",
+    "name_en": "Yazd",
+    "location": null,
+    "created_at": "2026-02-08T17:29:16.167615+00:00",
+    "updated_at": "2026-02-08T17:29:16.167615+00:00"
   }
 ]

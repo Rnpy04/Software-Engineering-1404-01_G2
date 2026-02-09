@@ -3,7 +3,6 @@ from team4.models import Province
 from team4.fields import Point
 import json
 
-
 class Command(BaseCommand):
     help = 'Load provinces with location data'
 
@@ -17,40 +16,35 @@ class Command(BaseCommand):
         created_count = 0
         
         for item in data:
-            pk = item['pk']
-            fields = item['fields']
+            # Match the JSON keys exactly
+            p_id = item['province_id']
+            name_fa = item['name_fa']
+            name_en = item['name_en']
             
-            # پردازش location
+            # Process location from the nested dictionary in your JSON
             location = None
-            if fields.get('location'):
-                location_str = fields['location']
-                # پارس کردن "POINT(lng lat)"
-                coords = location_str.replace('POINT(', '').replace(')', '').split()
-                lng = float(coords[0])
-                lat = float(coords[1])
+            loc_data = item.get('location')
+            if loc_data and loc_data.get('longitude') and loc_data.get('latitude'):
+                lng = float(loc_data['longitude'])
+                lat = float(loc_data['latitude'])
                 location = Point(lng, lat)
             
-            # بررسی اینکه آیا استان وجود دارد
-            try:
-                province = Province.objects.using('team4').get(province_id=pk)
-                # Update existing province
-                province.name_fa = fields['name_fa']
-                province.name_en = fields['name_en']
-                province.location = location
-                province.save(using='team4', update_fields=['name_fa', 'name_en', 'location', 'updated_at'])
-                updated_count += 1
-                self.stdout.write(self.style.SUCCESS(f'✓ بروزرسانی: {province.name_fa}'))
-            except Province.DoesNotExist:
-                # Create new province
-                province = Province(
-                    province_id=pk,
-                    name_fa=fields['name_fa'],
-                    name_en=fields['name_en'],
-                    location=location
-                )
-                province.save(using='team4')
+            # Use update_or_create to simplify the logic
+            province, created = Province.objects.using('team4').update_or_create(
+                province_id=p_id,
+                defaults={
+                    'name_fa': name_fa,
+                    'name_en': name_en,
+                    'location': location,
+                }
+            )
+            
+            if created:
                 created_count += 1
-                self.stdout.write(self.style.SUCCESS(f'✓ ایجاد: {province.name_fa}'))
+                self.stdout.write(self.style.SUCCESS(f'✓ ایجاد: {name_fa}'))
+            else:
+                updated_count += 1
+                self.stdout.write(self.style.SUCCESS(f'✓ بروزرسانی: {name_fa}'))
         
         self.stdout.write(self.style.SUCCESS(
             f'\n✅ کامل شد: {created_count} ایجاد، {updated_count} بروزرسانی'

@@ -3,7 +3,6 @@ from team4.models import City, Province
 from team4.fields import Point
 import json
 
-
 class Command(BaseCommand):
     help = 'Load cities with location data'
 
@@ -21,37 +20,37 @@ class Command(BaseCommand):
             city_id = item['city_id']
             name_fa = item['name_fa']
             name_en = item['name_en']
-            province_id = item['province_id']
             
-            # بررسی وجود استان
+            # --- FIX: Get province_id from nested 'province' object ---
+            province_data = item.get('province', {})
+            p_id = province_data.get('province_id')
+            
             try:
-                province = Province.objects.using('team4').get(province_id=province_id)
+                province = Province.objects.using('team4').get(province_id=p_id)
             except Province.DoesNotExist:
-                self.stdout.write(self.style.WARNING(f'⚠ استان {province_id} برای شهر {name_fa} یافت نشد'))
+                self.stdout.write(self.style.WARNING(f'⚠ استان {p_id} برای شهر {name_fa} یافت نشد'))
                 skipped_count += 1
                 continue
             
-            # پردازش location
+            # --- FIX: Get latitude/longitude from nested 'location' object ---
             location = None
-            if item.get('latitude') and item.get('longitude'):
-                lat = float(item['latitude'])
-                lng = float(item['longitude'])
+            loc_data = item.get('location', {})
+            if loc_data.get('latitude') and loc_data.get('longitude'):
+                lat = float(loc_data['latitude'])
+                lng = float(loc_data['longitude'])
                 location = Point(lng, lat)
             
-            # بررسی اینکه آیا شهر وجود دارد
+            # Update or Create logic
             try:
                 city = City.objects.using('team4').get(city_id=city_id)
-                # Update existing city
                 city.name_fa = name_fa
                 city.name_en = name_en
                 city.province = province
                 city.location = location
+                # Only save relevant fields
                 city.save(using='team4', update_fields=['name_fa', 'name_en', 'province', 'location', 'updated_at'])
                 updated_count += 1
-                if updated_count % 500 == 0:
-                    self.stdout.write(f'... {updated_count} شهر بروزرسانی شد')
             except City.DoesNotExist:
-                # Create new city
                 city = City(
                     city_id=city_id,
                     name_fa=name_fa,
@@ -61,8 +60,6 @@ class Command(BaseCommand):
                 )
                 city.save(using='team4')
                 created_count += 1
-                if created_count % 500 == 0:
-                    self.stdout.write(f'... {created_count} شهر ایجاد شد')
         
         self.stdout.write(self.style.SUCCESS(
             f'\n✅ کامل شد: {created_count} ایجاد، {updated_count} بروزرسانی، {skipped_count} رد شد'
