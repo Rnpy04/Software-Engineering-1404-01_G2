@@ -15,8 +15,8 @@ class FreeAIService:
         headers = {"Authorization": f"Bearer {self.api_key}"}
 
         prompt = (
-            "لطفاً متن زیر را در حداکثر سه جمله به فارسی خلاصه کن، "
-            "نکات اصلی و مهم آن را حفظ کن و جزئیات غیرضروری را حذف کن:\n\n"
+            "Please summarize the given text in five sentences in Persian, "
+            "keeping the main points and important details, and removing any unnecessary information:\n\n"
             f"{text}"
         )
         payload = {
