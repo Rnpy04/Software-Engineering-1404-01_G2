@@ -131,9 +131,9 @@ class ArticleCreateView(CreateView):
             article.body_en = article.body_fa
             
         # خلاصه متن
-        article.summary = summarize_text(article.body_fa)
+        # article.summary = summarize_text(article.body_fa)
         # ذخیره مقاله
-        article.save()
+        
         try:
             llm = FreeAIService()
             ai_summary = llm.generate_summary(article.body_fa)
@@ -155,6 +155,15 @@ class ArticleCreateView(CreateView):
             # اگر AI خراب شد، مقاله با خلاصه دستی ذخیره شود
             print("AI summary/tags error:", e)
         
+        article.save()
+        WikiArticleRevision.objects.create(
+            article=article,
+            revision_no=1,
+            body_fa=article.body_fa,
+            body_en=article.body_en,  
+            editor_user_id=self.request.user.id,
+            change_note="ایجاد اولیه مقاله"
+        )
         # اضافه کردن پیام موفقیت
         messages.success(self.request, f"✅ مقاله '{article.title_fa}' با موفقیت ایجاد شد!")
         
@@ -182,14 +191,14 @@ def edit_article(request, slug):
         })
     
     # این متغیر را باید از خود مقاله بگیریم
-    current_rev = article.current_revision_no if hasattr(article, 'current_revision_no') else 1
+    current_rev = WikiArticleRevision.objects.filter(article=article).count() + 1
 
     if request.method == "POST":
         # ذخیره نسخه قبلی در تاریخچه
         WikiArticleRevision.objects.create(
             article=article,
             revision_no=current_rev,
-            body_fa=article.body_fa,
+            body_fa=request.POST.get('body_fa', article.body_fa),
             editor_user_id=request.user.id,
             change_note=request.POST.get('change_note', 'ویرایش بدون توضیح')
         )
@@ -340,32 +349,7 @@ def get_wiki_content(request):
     
     return JsonResponse(data)
 
-def summarize_text(text):
-    """
-    این تابع متن فارسی رو می‌گیره و خلاصه‌شده‌ش رو برمی‌گردونه.
-    از HuggingFace Inference API برای مدل‌های summarization استفاده می‌کنه.
-    """
-    API_URL = "https://api-inference.huggingface.co/models/sshleifer/distilbart-cnn-12-6"
-    headers = {"Authorization": "Bearer hf_your_token_here"}  # اگر token لازم باشه
 
-    payload = {
-        "inputs": text,
-        "parameters": {"min_length": 30, "max_length": 150}
-    }
-
-    try:
-        response = requests.post(API_URL, headers=headers, json=payload, timeout=10)
-        response.raise_for_status()
-        result = response.json()
-        if isinstance(result, list) and "summary_text" in result[0]:
-            return result[0]["summary_text"]
-        elif isinstance(result, dict) and "summary_text" in result:
-            return result["summary_text"]
-    except Exception as e:
-        print("Error in summarization:", e)
-
-    # اگر خلاصه‌سازی موفق نبود، متن کامل را برمی‌گردانیم
-    return text[:150] + "..." if len(text) > 150 else text
 
 @login_required
 def delete_article(request, slug):
