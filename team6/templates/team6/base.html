@@ -47,16 +47,40 @@
         }
         
         .team6-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            /* تغییر از سفید به آبی ملایم */
+            background: #f0f7ff; 
+            padding: 25px;
+            border-radius: 12px;
+            /* سایه را کمی نرم‌تر می‌کنیم تا با رنگ جدید ست شود */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
+            /* اضافه کردن یک حاشیه خیلی ظریف آبی */
+            border: 1px solid #e1eeff;
         }
         
         /* تطبیق RTL با بوت‌استرپ */
         .form-control, .form-select {
             text-align: right;
+        }
+        
+        #search-section {
+            /* خاکستری تیره‌تر و شیک */
+            background-color: #e9ecef !important; 
+            /* ایجاد سایه عمیق‌تر برای جدا شدن از صفحه */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
+            /* یک حاشیه ظریف برای تمیزی کار */
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        #search-section:hover {
+            /* افکت ملایم وقتی ماوس روی بخش جستجو می‌رود */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* برای اینکه دکمه جستجو هم بهتر دیده شود */
+        #search-section .btn-primary {
+            box-shadow: 0 4px 10px rgba(26, 35, 126, 0.3);
         }
     </style>
 </head>

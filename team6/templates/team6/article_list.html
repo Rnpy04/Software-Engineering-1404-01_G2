@@ -4,7 +4,7 @@
 {% block content %}
 <h2>لیست مقالات <span class="badge bg-secondary">{{ articles.count }}</span></h2>
 
-<form method="GET" class="row g-3 mb-4 p-3 bg-light rounded">
+<form method="GET" id="search-section" class="row g-3 mb-4 p-3 bg-light rounded">
     <div class="col-md-5">
         <input type="text" name="q" class="form-control"
                placeholder="جستجوی مقالات..."
@@ -57,7 +57,12 @@
                 <h5 class="card-title">{{ article.title_fa }}</h5>
 
                 <p class="card-text text-muted">
-                    {{ article.body_fa|truncatewords:25 }}
+                    {% if article.summary %}
+                        {{ article.summary|truncatewords:25 }}
+                    {% else %}
+                        {# اگر خلاصه وجود نداشت، بخشی از متن اصلی را نشان دهد #}
+                        {{ article.body_fa|truncatewords:25 }}
+                    {% endif %}
                 </p>
 
                 <div class="mb-2">
