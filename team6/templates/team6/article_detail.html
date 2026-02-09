@@ -51,6 +51,14 @@
     <div class="card-body">
         <p><strong>نام مکان:</strong> {{ article.place_name|default:"ثبت نشده" }}</p>
         <p><strong>خلاصه:</strong> {{ article.summary|default:"خلاصه‌ای ثبت نشده است" }}</p>
+        {% if article.tags.all %}
+        <p><strong>🏷️ تگ‌ها:</strong>
+            {% for tag in article.tags.all %}
+            <span class="badge bg-secondary me-1">{{ tag.title_fa }}</span>
+            {% endfor %}
+        </p>
+        {% endif %}
+        
         <p><strong>شناسه مقاله:</strong> 
             {% if article.id_article %}
                 {{ article.id_article }}

@@ -37,6 +37,8 @@ urlpatterns = [
     views.article_revision_detail,
     name="article_revision_detail"
 ),
+    # re_path(r'^article/(?P<slug>[^/]+)/generate-ai/$', views.generate_ai_content_api, name='generate_ai'),
+    path("api/preview-ai/", views.preview_ai_content, name='preview_ai'),
 ]
 
 

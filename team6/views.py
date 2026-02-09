@@ -6,12 +6,16 @@ from django.contrib.auth.decorators import login_required
 import uuid
 from django.contrib import messages
 from django.utils.text import slugify
-from .models import WikiArticle, WikiCategory, WikiArticleRevision, WikiArticleReports
+from .models import WikiArticle,WikiTag, WikiCategory, WikiArticleRevision, WikiArticleReports
 from deep_translator import GoogleTranslator
 import requests
 from django.db import IntegrityError
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+import json
+from django.views.decorators.csrf import csrf_exempt
+from .services.llm_service import FreeAIService
 
 TEAM_NAME = "team6"
 
@@ -130,6 +134,26 @@ class ArticleCreateView(CreateView):
         article.summary = summarize_text(article.body_fa)
         # ذخیره مقاله
         article.save()
+        try:
+            llm = FreeAIService()
+            ai_summary = llm.generate_summary(article.body_fa)
+            ai_tags = llm.extract_tags(article.body_fa, article.title_fa)
+
+            article.summary = ai_summary
+            article.save(update_fields=['summary'])
+
+            # حذف تگ‌های قبلی و اضافه کردن تگ‌های AI
+            article.tags.clear()
+            for tag_name in ai_tags:
+                tag, _ = WikiTag.objects.get_or_create(
+                    title_fa=tag_name,
+                    defaults={'slug': tag_name.replace(' ', '-').replace('‌', '-')[:50],
+                            'title_en': tag_name}
+                )
+                article.tags.add(tag)
+        except Exception as e:
+            # اگر AI خراب شد، مقاله با خلاصه دستی ذخیره شود
+            print("AI summary/tags error:", e)
         
         # اضافه کردن پیام موفقیت
         messages.success(self.request, f"✅ مقاله '{article.title_fa}' با موفقیت ایجاد شد!")
@@ -182,9 +206,19 @@ def edit_article(request, slug):
                 article.category = WikiCategory.objects.get(id_category=category_id)
             except WikiCategory.DoesNotExist:
                 pass
+        tags_input = request.POST.get('tags', '')
+        article.tags.clear()
+        for tag_name in [t.strip() for t in tags_input.split(",") if t.strip()]:
+            tag, _ = WikiTag.objects.get_or_create(
+                title_fa=tag_name,
+                defaults={'slug': tag_name.replace(' ', '-').replace('‌', '-')[:50],
+                        'title_en': tag_name}
+            )
+            article.tags.add(tag)
         
         article.current_revision_no = current_rev + 1
         article.last_editor_user_id = request.user.id
+        # article.featured_image_url = request.POST.get('featured_image_url', article.featured_image_url)
         article.save()
 
         messages.success(request, "✅ مقاله با موفقیت ویرایش شد")
@@ -364,3 +398,82 @@ def error_403(request, exception):
 
 def error_400(request, exception):
     return render(request, 'team6/errors/400.html', status=400)
+
+# @csrf_exempt
+# def generate_ai_content_api(request, slug):
+#     """تولید دستی خلاصه و تگ با AI"""
+#     if request.method != 'POST':
+#         return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+#     article = get_object_or_404(WikiArticle, slug=slug)
+    
+#     # فقط نویسنده
+#     if str(article.author_user_id) != str(request.user.id):
+#         return JsonResponse({'error': 'شما مجاز به انجام این عمل نیستید'}, status=403)
+    
+#     try:
+#         llm_service = FreeAIService()
+        
+#         # تولید خلاصه جدید
+#         new_summary = llm_service.generate_summary(article.body_fa)
+        
+#         # استخراج تگ‌های جدید
+#         new_tags = llm_service.extract_tags(article.body_fa, article.title_fa)
+        
+#         # ذخیره خلاصه
+#         article.summary = new_summary
+#         article.save()
+        
+#         # حذف تگ‌های قبلی و اضافه کردن تگ‌های جدید
+#         article.tags.clear()
+#         for tag_name in new_tags:
+#             tag, created = WikiTag.objects.get_or_create(
+#                 title_fa=tag_name,
+#                 defaults={
+#                     'slug': tag_name.replace(' ', '-').replace('‌', '-')[:50],
+#                     'title_en': tag_name
+#                 }
+#             )
+#             article.tags.add(tag)
+        
+#         return JsonResponse({
+#             'success': True,
+#             'summary': new_summary,
+#             'tags': new_tags,
+#             'message': 'خلاصه و تگ‌ها با موفقیت تولید شدند'
+#         })
+        
+#     except Exception as e:
+#         return JsonResponse({
+#             'error': f'خطا: {str(e)}'
+#         }, status=500)
+
+@csrf_exempt
+def preview_ai_content(request):
+    """پیش‌نمایش خلاصه"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        text = data.get('text', '')
+        title = data.get('title', '')
+        
+        if not text:
+            return JsonResponse({'error': 'متن مورد نیاز است'}, status=400)
+        
+        llm_service = FreeAIService()
+        
+        summary = llm_service.generate_summary(text)
+        tags = llm_service.extract_tags(text, title)
+        
+        return JsonResponse({
+            'success': True,
+            'summary': summary,
+            'tags': tags
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': f'خطا: {str(e)}'
+        }, status=500)
