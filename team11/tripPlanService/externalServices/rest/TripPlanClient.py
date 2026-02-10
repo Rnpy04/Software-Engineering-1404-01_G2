@@ -10,6 +10,6 @@ class TripPlanClient:
         url = f'http://{TRIP_PLAN_REST_URL}/'
         response = requests.get(url)
         if response.status_code == 200:
-            return str(response.json())
+            return str(response.text)
         else:
             return str(response.status_code)+"  "+url

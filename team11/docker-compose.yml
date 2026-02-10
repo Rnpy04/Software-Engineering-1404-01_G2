@@ -1,5 +1,5 @@
 services:
-  gateway:
+  trip-plan-gateway:
     image: nginx:alpine
     ports:
       - "9151:80"
