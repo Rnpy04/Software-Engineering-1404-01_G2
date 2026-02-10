@@ -7,14 +7,14 @@
 <style>
     .form-control:focus { border-color: #4CAF50; box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25); }
     #articleSelect option { padding: 8px; border-bottom: 1px solid #eee; }
-    
+
     /* استایل لینک‌ها در باکس پیش‌نمایش */
     #livePreview a.internal-link {
         color: #0066cc !important;
         text-decoration: underline !important;
         font-weight: bold;
     }
-    
+
     #livePreview {
         background-color: #f9f9f9;
         min-height: 100px;
@@ -27,14 +27,16 @@
     <div class="card-header py-3" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white;">
         <h4 class="mb-0"><i class="fa-solid fa-plus-circle"></i> ایجاد مقاله جدید</h4>
     </div>
-    
+
     <div class="card-body p-4">
         <form method="POST" id="articleForm">
             {% csrf_token %}
-            
+
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">عنوان مقاله</label>
+                    <label class="form-label fw-bold">
+                        عنوان مقاله <span class="text-danger">*</span>
+                    </label>
                     <input type="text" name="title_fa" id="title_fa" class="form-control" required>
                 </div>
                 <div class="col-md-6">
@@ -44,7 +46,9 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-bold">دسته‌بندی</label>
+                <label class="form-label fw-bold">
+                    دسته‌بندی <span class="text-danger">*</span>
+                </label>
                 <select name="category" class="form-select" required>
                     {% for cat in categories %}
                         <option value="{{ cat.id_category }}">{{ cat.title_fa }}</option>
@@ -52,16 +56,25 @@
                 </select>
             </div>
 
+            <div class="mb-3">
+                <label class="form-label fw-bold">
+                    تگ‌ها <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="tags" class="form-control"
+                    placeholder="مثلاً: تاریخ, معماری, ایران (با کاما جدا کنید)" required>
+                <small class="text-muted">تگ‌ها را با , از هم جدا کنید</small>
+            </div>
+
             <div class="mb-4">
                 <label class="form-label fw-bold d-flex justify-content-between">
-                    <span>متن مقاله</span>
+                    <span>متن مقاله <span class="text-danger">*</span></span>
                     <button type="button" class="btn btn-sm btn-primary" id="addLinkBtn">
                         <i class="fa-solid fa-link"></i> درج پیوند داخلی
                     </button>
                 </label>
-                
+
                 <textarea name="body_fa" id="body_fa" class="form-control mt-2" rows="10" required></textarea>
-                
+
                 <div class="mt-3">
                     <small class="text-muted"><i class="fa-solid fa-eye"></i> پیش‌نمایش زنده (لینک‌های آبی را اینجا ببینید):</small>
                     <div id="livePreview" class="p-3 mt-1 rounded"></div>
@@ -106,9 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let selectionStart, selectionEnd, selectedText;
 
-    // آپدیت پیش‌نمایش زنده
     function updatePreview() {
-        // تبدیل متن ساده به HTML (فقط برای نمایش)
         let content = bodyTextarea.value.replace(/\n/g, '<br>');
         livePreview.innerHTML = content;
     }
@@ -128,11 +139,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (targetSlug) {
             const linkHtml = `<a href="/team6/article/${targetSlug}/" class="internal-link">${selectedText}</a>`;
             bodyTextarea.value = bodyTextarea.value.substring(0, selectionStart) + linkHtml + bodyTextarea.value.substring(selectionEnd);
-            updatePreview(); // آپدیت پیش‌نمایش بعد از درج لینک
+            updatePreview();
         }
         linkModal.hide();
     });
 });
 </script>
 {% endblock %}
-

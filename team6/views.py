@@ -169,6 +169,11 @@ class ArticleCreateView(CreateView):
 
     def form_valid(self, form):
         article = form.save(commit=False)
+        tags_input = self.request.POST.get('tags', '').strip()
+
+        if not tags_input:
+            messages.error(self.request, "وارد کردن حداقل یک تگ الزامی است.")
+            return self.form_invalid(form)
         # پر کردن اطلاعات نویسنده و ویرایشگر
         article.author_user_id = self.request.user.id
         article.last_editor_user_id = self.request.user.id
@@ -216,20 +221,31 @@ class ArticleCreateView(CreateView):
         try:
             llm = FreeAIService()
             ai_summary = llm.generate_summary(article.body_fa)
-            ai_tags = llm.extract_tags(article.body_fa, article.title_fa)
+            # ai_tags = llm.extract_tags(article.body_fa, article.title_fa)
 
             article.summary = ai_summary
             article.save(update_fields=['summary'])
-
-            # حذف تگ‌های قبلی و اضافه کردن تگ‌های AI
-            article.tags.clear()
-            for tag_name in ai_tags:
+            # --- ذخیره تگ‌های وارد شده توسط کاربر ---
+            tags_input = self.request.POST.get('tags', '')
+            for tag_name in [t.strip() for t in tags_input.split(',') if t.strip()]:
                 tag, _ = WikiTag.objects.get_or_create(
                     title_fa=tag_name,
-                    defaults={'slug': tag_name.replace(' ', '-').replace('‌', '-')[:50],
-                            'title_en': tag_name}
+                    defaults={
+                        'slug': slugify(tag_name),
+                        'title_en': tag_name
+                    }
                 )
                 article.tags.add(tag)
+
+            # حذف تگ‌های قبلی و اضافه کردن تگ‌های AI
+            # article.tags.clear()
+            # for tag_name in ai_tags:
+            #     tag, _ = WikiTag.objects.get_or_create(
+            #         title_fa=tag_name,
+            #         defaults={'slug': tag_name.replace(' ', '-').replace('‌', '-')[:50],
+            #                 'title_en': tag_name}
+            #     )
+            #     article.tags.add(tag)
             logger.info("🤖 AI Summary generated successfully.")
         except Exception as e:
             # اگر AI خراب شد، مقاله با خلاصه دستی ذخیره شود

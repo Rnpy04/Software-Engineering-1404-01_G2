@@ -64,6 +64,13 @@
                 <label for="summary" class="form-label fw-bold"><i class="fa-solid fa-file-lines"></i> خلاصه مقاله</label>
                 <textarea name="summary" id="summary" class="form-control" rows="3">{{ article.summary|default:'' }}</textarea>
             </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">تگ‌ها</label>
+                <input type="text" name="tags" class="form-control"
+                    value="{% for tag in article.tags.all %}{{ tag.title_fa }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                <small class="text-muted">برای حذف یا اضافه، تگ‌ها را ویرایش کنید</small>
+            </div>
+
 
             <div class="mb-3">
                 <label for="change_note" class="form-label fw-bold"><i class="fa-solid fa-sticky-note"></i> یادداشت تغییرات <span class="text-danger">*</span></label>
