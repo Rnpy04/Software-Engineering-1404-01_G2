@@ -18,6 +18,12 @@ from django.views.decorators.csrf import csrf_exempt
 from .services.llm_service import FreeAIService
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import logging
+from django.http import Http404
+
+# تنظیم لاگر برای چاپ در ترمینال
+logger = logging.getLogger(__name__)
+
 
 TEAM_NAME = "team6"
 
@@ -181,7 +187,9 @@ class ArticleCreateView(CreateView):
         try:
             article.title_en = GoogleTranslator(source='fa', target='en').translate(article.title_fa)
             article.body_en = GoogleTranslator(source='fa', target='en').translate(article.body_fa)
+            logger.info(f"✅ Translation success for: {article.title_fa}")
         except Exception as e:
+            logger.warning(f"⚠️ Translation failed: {e}. Using Persian text as fallback.")
             # اگر ترجمه انجام نشد، پیش‌فرض انگلیسی برابر فارسی باشد
             article.title_en = article.title_fa
             article.body_en = article.body_fa
@@ -207,9 +215,12 @@ class ArticleCreateView(CreateView):
                             'title_en': tag_name}
                 )
                 article.tags.add(tag)
+            logger.info("🤖 AI Summary generated successfully.")
         except Exception as e:
             # اگر AI خراب شد، مقاله با خلاصه دستی ذخیره شود
             print("AI summary/tags error:", e)
+            logger.error(f"❌ AI Service Error: {e}")
+            # messages.warning(self.request, "مقاله ذخیره شد، اما سیستم هوش مصنوعی برای تولید خلاصه در دسترس نبود.")
         
         article.save()
         WikiArticleRevision.objects.create(
@@ -344,7 +355,6 @@ def article_revisions(request, slug):
         'article': article, 
         'revisions': revisions
     })
-
 # نمایش جزئیات مقاله
 def article_detail(request, slug):
     try:
@@ -366,9 +376,21 @@ def article_detail(request, slug):
             # اطلاع به جنگو که سشن تغییر کرده و باید ذخیره شود
             request.session.modified = True
         return render(request, 'team6/article_detail.html', {'article': article})
+    except WikiArticle.DoesNotExist:
+        logger.error(f"❌ Article NOT FOUND: slug='{slug}'")
+        return render(request, 'team6/errors/404.html', {
+            'error_message': f"متأسفانه مقاله‌ای با آدرس '{slug}' پیدا نشد."
+        }, status=404)
+    except Http404:
+        logger.error(f"❌  NOT FOUND: slug='{slug}'")
+        return render(request, 'team6/errors/404.html', {
+            'error_message': "پیدا نشد."
+        }, status=404)
     except Exception as e:
-        print(f"Error: {e}") 
-        return render(request, 'team6/errors/500.html', status=500)
+        logger.exception(f"🔥 Critical Error in article_detail: {e}")
+        return render(request, 'team6/errors/500.html', {
+            'error_message': "یک خطای فنی در سرور رخ داده است. تیم فنی مطلع شد."
+        }, status=500)
 
 def calculate_article_score(article):
     """

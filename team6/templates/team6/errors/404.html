@@ -3,7 +3,7 @@
 {% block content %}
 <div style="text-align: center; padding: 50px;">
     <h1 style="font-size: 100px; color: #e74c3c;">۴۰۴</h1>
-    <h2>متأسفیم! مقاله مورد نظر یافت نشد.</h2>
+    <p>{{ error_message|default:"صفحه مورد نظر شما وجود ندارد." }}</p>
     <p>ممکن است آدرس را اشتباه وارد کرده باشید یا مقاله حذف شده باشد.</p>
     <br>
     <a href="{% url 'team6:index' %}" style="background: #3498db; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
