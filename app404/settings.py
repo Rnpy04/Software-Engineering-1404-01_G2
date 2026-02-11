@@ -27,6 +27,7 @@ INSTALLED_APPS = [
 
     # 3rd-party
     "corsheaders",
+    "rest_framework",
 
     # Local
     "core",
