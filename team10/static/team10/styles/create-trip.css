@@ -1,0 +1,96 @@
+/* overrideهای خاص برای صفحه create-trip، برای match با styles.css اصلی */
+
+/* فرم اصلی */
+.auth-card {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px;
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.5);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+/* هیرو سفارشی */
+.hero-custom {
+    background: linear-gradient(180deg, rgba(0, 77, 64, 0.85), rgba(46, 125, 50, 0.7)), url('https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?q=80&w=1600&auto=format&fit=crop');
+}
+
+/* ردیف فرم */
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+/* چیپ‌ها (برای ترجیحات) */
+.chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(46, 125, 50, 0.1);  /* بر اساس --forest-green */
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    border: 1px solid rgba(46, 125, 50, 0.2);
+    color: var(--forest-green);
+}
+
+.chip input {
+    display: none;
+}
+
+.chip:hover {
+    background: rgba(46, 125, 50, 0.2);
+}
+
+.chip:has(input:checked) {
+    background: var(--forest-green);
+    color: var(--white);
+    border-color: var(--forest-green);
+}
+
+/* required ستاره */
+.required {
+    color: #ef4444;
+}
+
+/* loading و result */
+.loading-text {
+    display: none;
+    color: var(--persian-blue);
+    margin-top: 15px;
+}
+
+.result-area {
+    max-width: 600px;
+    margin: 20px auto;
+    display: none;
+    padding: 30px;
+}
+
+.success-message {
+    color: #10b981;
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+.error-message {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}

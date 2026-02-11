@@ -1,0 +1,429 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ایجاد برنامه سفر | ایران‌نما</title>
+    <link rel="stylesheet" href="{% static 'styles/styles.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- تقویم شمسی -->
+    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@latest/dist/css/persian-datepicker.min.css">
+
+    <!-- استایل اختصاصی این صفحه -->
+    <link rel="stylesheet" href="{% static 'team10/styles/create-trip.css' %}">
+</head>
+<body>
+
+    <div class="bg-pattern"></div>
+
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fa-solid fa-leaf"></i>
+                <div class="logo-text">
+                    <h1>ایران‌نما</h1>
+                    <span>سامانه هوشمند گردشگری</span>
+                </div>
+            </div>
+            <div class="auth-buttons">
+                {% if request.user.is_authenticated %}
+                    <form method="post" action="/auth/logout/" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-login">خروج</button>
+                    </form>
+                {% else %}
+                    <a href="/auth/" class="btn btn-login">ورود</a>
+                    <a href="/auth/signup/" class="btn btn-login">ثبت‌نام</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <section class="hero hero-custom">
+        <div class="hero-content">
+            <h2>برنامه‌ریزی سفر هوشمند</h2>
+            <p>سفری شخصی‌سازی‌شده بر اساس علایق و سابقه شما</p>
+        </div>
+    </section>
+
+    <main class="container dashboard">
+        <div class="section-header">
+            <h3>ایجاد سفر جدید</h3>
+            <div class="line"></div>
+        </div>
+
+        <form id="create-trip-form" class="auth-card">
+            <!-- مقصد -->
+            <div class="form-group">
+                <label for="destination">مقصد <span class="required">*</span></label>
+                <input type="text" id="destination" name="destination" placeholder="مثال: اصفهان، شیراز، کیش، مشهد..." required autocomplete="off">
+            </div>
+
+            <!-- تاریخ‌ها -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="start-date">تاریخ شروع <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <input type="text" id="start-date" name="start_date_jalali" class="persian-date jalali-input" placeholder="۱۴۰۴/۱۱/۲۲" required autocomplete="off">
+                        <i class="fas fa-calendar-alt calendar-icon"></i>
+                    </div>
+                    <input type="hidden" name="start_date" id="start-date-gregorian">
+                </div>
+
+                <div class="form-group">
+                    <label for="end-date">تاریخ پایان <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <input type="text" id="end-date" name="end_date_jalali" class="persian-date jalali-input" placeholder="۱۴۰۴/۱۲/۰۵" required autocomplete="off">
+                        <i class="fas fa-calendar-alt calendar-icon"></i>
+                    </div>
+                    <input type="hidden" name="end_date" id="end-date-gregorian">
+                </div>
+            </div>
+
+
+            <!-- تعداد نفرات -->
+            <div class="form-group">
+                <label for="travelers">تعداد مسافران</label>
+                <select id="travelers" name="travelers_count">
+                    <option value="1">۱ نفر (تنها)</option>
+                    <option value="2" selected>۲ نفر</option>
+                    <option value="3">۳ نفر</option>
+                    <option value="4">۴ نفر</option>
+                    <option value="5+">۵ نفر یا بیشتر</option>
+                </select>
+            </div>
+
+            <!-- سبک و ترجیحات اصلی (چندگزینه‌ای) -->
+            <div class="form-group">
+                <label>سبک سفر من (می‌توانید چند مورد انتخاب کنید)</label>
+                <div class="chips-container">
+                    <label class="chip">
+                        <input type="checkbox" name="preferences" value="nature"> طبیعت‌گردی
+                    </label>
+                    <label class="chip">
+                        <input type="checkbox" name="preferences" value="history"> تاریخی و فرهنگی
+                    </label>
+                    <label class="chip">
+                        <input type="checkbox" name="preferences" value="food"> غذاشناسی و رستوران‌گردی
+                    </label>
+                    <label class="chip">
+                        <input type="checkbox" name="preferences" value="relax"> آرامش و استراحت
+                    </label>
+                    <label class="chip">
+                        <input type="checkbox" name="preferences" value="adventure"> ماجراجویی و هیجانی
+                    </label>
+                    <label class="chip">
+                        <input type="checkbox" name="preferences" value="shopping"> خرید و بازارگردی
+                    </label>
+                    <label class="chip">
+                        <input type="checkbox" name="preferences" value="nightlife"> تفریحات شبانه
+                    </label>
+                </div>
+            </div>
+
+            <!-- بودجه تقریبی -->
+            <div class="form-group">
+                <label for="budget">بودجه تقریبی کل سفر (به تومان)</label>
+                <input type="number" id="budget" name="budget" placeholder="مثال: ۱۵۰۰۰۰۰۰" min="1000000">
+            </div>
+
+            <!-- دکمه ارسال -->
+            <div class="form-actions">
+                <button type="submit" class="auth-btn btn-submit-signup" id="submit-btn">
+                    <i class="fas fa-magic"></i> ساخت برنامه سفر هوشمند
+                </button>
+                <p class="loading-text" id="loading">
+                    <i class="fas fa-spinner fa-spin"></i> در حال ساخت برنامه شخصی‌سازی‌شده...
+                </p>
+            </div>
+        </form>
+
+        <div id="result-area" class="result-area auth-card">
+            <h2>برنامه سفر شما آماده است!</h2>
+            <div id="result-content"></div>
+            <button class="auth-btn btn-submit-login" onclick="window.location.reload()">سفر جدید</button>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; ۱۴۰۴ - پروژه مهندسی نرم‌افزار ۱ | دانشگاه صنعتی امیرکبیر</p>
+    </footer>
+
+    <!-- اسکریپت‌های مورد نیاز -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/persian-date@latest/dist/persian-date.min.js"></script>
+    <script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js"></script>
+
+    <script>
+        // Convert Persian/Farsi numerals to English numerals
+        function persianToEnglish(str) {
+            const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            let result = str;
+            for (let i = 0; i < 10; i++) {
+                result = result.replace(new RegExp(persianNumbers[i], 'g'), englishNumbers[i]);
+            }
+            return result;
+        }
+
+        // Jalali to Gregorian conversion algorithm
+        // Based on Kazimierz M. Borkowski's algorithm
+        function jalaliToGregorian(jy, jm, jd) {
+            jy += 1595;
+            let days = -355668 + (365 * jy) + (Math.floor(jy / 33) * 8) +
+                       Math.floor(((jy % 33) + 3) / 4) + jd;
+
+            if (jm < 7) {
+                days += (jm - 1) * 31;
+            } else {
+                days += (jm - 7) * 30 + 186;
+            }
+
+            let gy = 400 * Math.floor(days / 146097);
+            days %= 146097;
+
+            let leap = true;
+            if (days >= 36525) {
+                days--;
+                gy += 100 * Math.floor(days / 36524);
+                days %= 36524;
+                if (days >= 365) {
+                    days++;
+                }
+                leap = false;
+            }
+
+            gy += 4 * Math.floor(days / 1461);
+            days %= 1461;
+
+            if (days >= 366) {
+                leap = false;
+                days--;
+                gy += Math.floor(days / 365);
+                days = days % 365;
+            }
+
+            let gm, gd;
+            const sal_a = [0, 31, (leap || (gy % 100 !== 0 && gy % 4 === 0) || (gy % 400 === 0)) ? 29 : 28,
+                          31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+            gd = days + 1;
+            for (gm = 0; gm < 13 && gd > sal_a[gm]; gm++) {
+                gd -= sal_a[gm];
+            }
+
+            return { year: gy, month: gm, day: gd };
+        }
+
+        $(document).ready(function() {
+            const datePickerOptions = {
+                observer: true,
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: false,
+                toolbox: {
+                    calendarSwitch: { enabled: false }
+                },
+                timePicker: { enabled: false },
+                onSelect: function(unix) {
+                    // Get the Jalali date string from the input
+                    let jalaliStr = persianToEnglish($(this._targetInput).val());
+                    let parts = jalaliStr.split('/');
+
+                    if (parts.length === 3) {
+                        let jy = parseInt(parts[0]);
+                        let jm = parseInt(parts[1]);
+                        let jd = parseInt(parts[2]);
+
+                        // Convert to Gregorian
+                        let greg = jalaliToGregorian(jy, jm, jd);
+                        let gDate = greg.year + '-' +
+                                    ('0' + greg.month).slice(-2) + '-' +
+                                    ('0' + greg.day).slice(-2);
+
+                        if (this._targetInput.id === 'start-date') {
+                            $('#start-date-gregorian').val(gDate);
+                        } else if (this._targetInput.id === 'end-date') {
+                            $('#end-date-gregorian').val(gDate);
+                        }
+
+                        console.log('Converted:', jalaliStr, '→', gDate);
+                    }
+                }
+            };
+
+            // اعمال تقویم
+            $('#start-date').persianDatepicker(datePickerOptions);
+            $('#end-date').persianDatepicker(datePickerOptions);
+
+            // باز کردن تقویم روی فوکوس (خیلی موثر است)
+            $('.jalali-input').on('focus', function() {
+                $(this).persianDatepicker('show');
+            });
+
+            // کلیک روی آیکون تقویم → فوکوس روی input
+            $('.calendar-icon').on('click', function() {
+                $(this).siblings('.jalali-input').focus();
+            });
+
+            // محدود کردن minDate برای پایان
+            $('#start-date').on('change', function() {
+                let startVal = $(this).val();
+                if (startVal) {
+                    $('#end-date').persianDatepicker('option', 'minDate', startVal);
+                }
+            });
+
+            // جلوگیری نرم از تایپ دستی (اختیاری - اگر می‌خواهید کاملاً غیرفعال کنید، preventDefault را برگردانید)
+            $('.jalali-input').on('keydown', function(e) {
+                // اگر می‌خواهید تایپ کاملاً ممنوع باشد:
+                // e.preventDefault();
+                // اما برای تجربه بهتر، فعلاً اجازه می‌دهیم (کاربر می‌تواند دستی وارد کند)
+            });
+        });
+
+        const form = document.getElementById('create-trip-form');
+        const loading = document.getElementById('loading');
+        const resultArea = document.getElementById('result-area');
+        const resultContent = document.getElementById('result-content');
+        const submitBtn = document.getElementById('submit-btn');
+
+        loading.style.display = 'none';
+        resultArea.style.display = 'none';
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            resultArea.style.display = 'none';
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            data.preferences = formData.getAll('preferences');
+
+            // Convert Jalali dates to Gregorian before sending
+            let startGreg = $('#start-date-gregorian').val();
+            let endGreg = $('#end-date-gregorian').val();
+
+            // If hidden fields are empty, try to convert manually
+            if (!startGreg || !endGreg) {
+                let startJalali = persianToEnglish($('#start-date').val());
+                let endJalali = persianToEnglish($('#end-date').val());
+
+                if (startJalali && endJalali) {
+                    try {
+                        // Parse and convert start date
+                        let startParts = startJalali.split('/');
+                        if (startParts.length === 3) {
+                            let startConv = jalaliToGregorian(
+                                parseInt(startParts[0]),
+                                parseInt(startParts[1]),
+                                parseInt(startParts[2])
+                            );
+                            startGreg = `${startConv.year}-${('0' + startConv.month).slice(-2)}-${('0' + startConv.day).slice(-2)}`;
+                        }
+
+                        // Parse and convert end date
+                        let endParts = endJalali.split('/');
+                        if (endParts.length === 3) {
+                            let endConv = jalaliToGregorian(
+                                parseInt(endParts[0]),
+                                parseInt(endParts[1]),
+                                parseInt(endParts[2])
+                            );
+                            endGreg = `${endConv.year}-${('0' + endConv.month).slice(-2)}-${('0' + endConv.day).slice(-2)}`;
+                        }
+                    } catch (err) {
+                        console.error('Manual conversion error:', err);
+                    }
+                }
+            }
+
+            // Validate we have Gregorian dates
+            if (!startGreg || !endGreg) {
+                resultContent.innerHTML = `<p class="error-message">لطفاً تاریخ‌ها را وارد کنید</p>`;
+                loading.style.display = 'none';
+                resultArea.style.display = 'block';
+                submitBtn.disabled = false;
+                return;
+            }
+
+            // Set the final dates with time
+            data.start_date = `${startGreg}T00:00:00`;
+            data.end_date = `${endGreg}T23:59:59`;
+            console.log('Final dates:', { start: data.start_date, end: data.end_date });
+
+            try {
+                const response = await fetch('/team10/api/trips/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    resultContent.innerHTML = `
+                        <p class="success-message">سفر با موفقیت ایجاد شد!</p>
+                        <p>شناسه سفر: <strong>${result.trip_id || '—'}</strong></p>
+                        <p>وضعیت: ${result.status === 'DRAFT' ? 'پیش‌نویس' : result.status}</p>
+                        <button class="btn btn-login" onclick="viewTripDetails(${result.trip_id})">مشاهده برنامه سفر</button>
+                    `;
+                } else {
+                    resultContent.innerHTML = `<p class="error-message">خطا: ${result.error || 'مشکلی پیش آمد'}</p>`;
+                }
+            } catch (err) {
+                resultContent.innerHTML = `<p class="error-message">اتصال به سرور برقرار نشد</p>`;
+            } finally {
+                loading.style.display = 'none';
+                resultArea.style.display = 'block';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Function to view trip details
+        async function viewTripDetails(tripId) {
+            try {
+                const response = await fetch(`/team10/api/trips/${tripId}/`);
+                const trip = await response.json();
+
+                if (response.ok) {
+                    let detailsHtml = `
+                        <h3>جزئیات سفر به ${trip.destination}</h3>
+                        <p><strong>تاریخ:</strong> ${new Date(trip.start_date).toLocaleDateString('fa-IR')} تا ${new Date(trip.end_date).toLocaleDateString('fa-IR')}</p>
+                        <p><strong>بودجه:</strong> ${trip.budget ? trip.budget.toLocaleString() + ' تومان' : 'نامشخص'}</p>
+                        <p><strong>هزینه کل:</strong> ${trip.total_cost.toLocaleString()} تومان</p>
+                        <p><strong>تعداد مسافران:</strong> ${trip.travelers_count} نفر</p>
+
+                        <h4>برنامه روزانه:</h4>
+                        <ul style="text-align: right; list-style: none;">
+                    `;
+
+                    trip.daily_plans.forEach(plan => {
+                        const startTime = new Date(plan.start_at).toLocaleTimeString('fa-IR', {hour: '2-digit', minute: '2-digit'});
+                        detailsHtml += `<li>⏰ ${startTime} - ${plan.description} (${plan.cost.toLocaleString()} تومان)</li>`;
+                    });
+
+                    detailsHtml += '</ul>';
+                    resultContent.innerHTML = detailsHtml;
+                } else {
+                    resultContent.innerHTML = `<p class="error-message">خطا در دریافت اطلاعات سفر</p>`;
+                }
+            } catch (err) {
+                resultContent.innerHTML = `<p class="error-message">خطا در اتصال به سرور</p>`;
+            }
+        }
+    </script>
+
+</body>
+</html>
