@@ -12,8 +12,7 @@ from .serializers import (
     ArticleSerializer, VersionSerializer, CreateArticleSerializer,
     CreateVersionFromVersionSerializer, VoteSerializer,
 )
-from .tasks.indexing import tag_article
-from .tasks.tasks import summarize_article
+from .tasks.tasks import summarize_article, tag_article
 
 TEAM_NAME = "team2"
 
