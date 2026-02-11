@@ -170,4 +170,17 @@ The Wiki Service provides a comprehensive set of features for structured article
 
 ## Integration with Core
 
+The Wiki Service is fully integrated with the Core system.
+
+Authentication and user session management are handled centrally
+by the Core service. The Wiki module relies on this shared
+authentication mechanism to identify users and enforce access control.
+
+Routing is managed through the Core URL configuration,
+which mounts the Wiki Service under the `/team6/` namespace.
+
+The service operates as a modular Django application
+while sharing the same runtime environment and infrastructure
+as the rest of the system.
+
 ## Notes for Developers
