@@ -15,9 +15,27 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <style>
+        :root {
+            /* تعریف پالت رنگی شما */
+            --forest-green: #2E7D32;
+            --persian-blue: #00695C;
+            --persian-gold: #FFB300;
+            --bg-light: #F1F8E9; /* رنگ پس‌زمینه ملایم طبیعتی */
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            font-family: "Vazirmatn", "Tahoma", sans-serif;
+            /* تغییر بک‌گراند اصلی */
+            background-color: var(--bg-light) !important; 
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+        }
         /* استایل‌های خاص تیم ۶ */
         .team6-header {
-            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            background: linear-gradient(135deg, var(--forest-green), var(--persian-blue));
             color: white;
             padding: 15px 0;
             margin-bottom: 20px;
@@ -25,7 +43,7 @@
         }
         
         .team6-nav {
-            background: #f8f9fa;
+            background: #00695C;
             padding: 10px 15px;
             border-radius: 8px;
             margin-bottom: 20px;
@@ -33,7 +51,7 @@
         }
         
         .team6-nav a {
-            color: #495057;
+            color: #ffffff;
             margin-left: 15px;
             text-decoration: none;
             padding: 5px 10px;
@@ -48,7 +66,7 @@
         
         .team6-container {
             /* تغییر از سفید به آبی ملایم */
-            background: #f0f7ff; 
+            background:  #ffffff;
             padding: 25px;
             border-radius: 12px;
             /* سایه را کمی نرم‌تر می‌کنیم تا با رنگ جدید ست شود */
@@ -62,10 +80,55 @@
         .form-control, .form-select {
             text-align: right;
         }
-        
+        .my-btn {
+            background: #FFE082; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .my-btn:hover {
+            background: #f7ba05;
+            transform: translateY(-2px);
+        }
+        .main-footer {
+            text-align: center;
+            padding: 40px;
+            background: var(--mountain-grey);
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+        /* تغییر پس‌زمینه و ظاهر کلی کارت‌های مقالات */
+        .card.h-100 {
+            /* استفاده از رنگ سفید بسیار شفاف برای حالت شیشه‌ای */
+            background-color: #dbe6e1; !important;
+            
+            /* لبه‌های گردتر و نرم‌تر */
+            border-radius: 15px !important;
+            
+            /* حذف حاشیه پیش‌فرض و جایگزینی با حاشیه ظریف سبز */
+            border: 1px solid rgba(46, 125, 50, 0.15) !important;
+            
+            /* اضافه کردن سایه ملایم */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+            
+            transition: all 0.3s ease;
+        }
+
+        /* افکت تغییر رنگ پس‌زمینه هنگام نگه داشتن ماوس روی کارت */
+        .card.h-100:hover {
+            background-color: #ffffff !important;
+            border-color: var(--persian-gold) !important; /* تغییر حاشیه به طلایی */
+            transform: translateY(-5px); /* کمی بالا آمدن کارت */
+        }
+
+        /* استایل دهی به بخش پایین کارت (Footer) */
+        .card-footer {
+            background: rgba(46, 125, 50, 0.05) !important; /* پس‌زمینه سبز خیلی کمرنگ */
+            border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+        }
         #search-section {
             /* خاکستری تیره‌تر و شیک */
-            background-color: #e9ecef !important; 
+            background-color: #dde9e5 !important; 
             /* ایجاد سایه عمیق‌تر برای جدا شدن از صفحه */
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
             /* یک حاشیه ظریف برای تمیزی کار */
@@ -82,6 +145,7 @@
         #search-section .btn-primary {
             box-shadow: 0 4px 10px rgba(26, 35, 126, 0.3);
         }
+        
     </style>
     {% load notification_tags %}
         {% if request.user.is_authenticated %}
@@ -131,6 +195,7 @@
         {% endif %}
 </head>
 <body>
+    <div class="bg-pattern"></div>
     <!-- هدر مشابه صفحه اصلی -->
     <div class="team6-header">
         <div class="container">
@@ -143,7 +208,7 @@
                     </div>
                 </div>
                 <div>
-                    <a href="/" class="btn btn-light btn-sm">
+                    <a href="/" class="btn my-btn">
                         <i class="fa-solid fa-home"></i> صفحه اصلی
                     </a>
                     {% if request.user.is_authenticated %}
@@ -204,12 +269,7 @@
         </div>
 
         
-        <!-- فوتر -->
-        <footer style="text-align: center; padding: 20px; color: #6c757d; font-size: 0.9em;">
-            <hr>
-            <p>ویکی گردشگری ایران | پروژه مهندسی نرم‌افزار | گروه ۶</p>
-            <p>© ۱۴۰۴ - تمامی حقوق محفوظ است</p>
-        </footer>
+        
     </div>
 
     <!-- اسکریپت‌ها -->
@@ -223,4 +283,9 @@
         });
     </script>
 </body>
+<!-- فوتر -->
+<footer class="main-footer ">
+            <hr>
+            <p>ویکی گردشگری ایران | پروژه مهندسی نرم‌افزار | گروه ۶</p>
+ </footer>
 </html>
