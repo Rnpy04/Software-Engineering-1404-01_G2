@@ -135,6 +135,39 @@ Database schema changes are managed through Django migrations
 located in the `migrations/` directory.
 ## Features
 
+The Wiki Service provides a comprehensive set of features for structured article management:
+
+### Article Management
+- Create, edit, and delete articles
+- Structured fields including titles, summaries, body content, and featured image
+- Slug-based routing for clean URLs
+
+### Categorization & Tagging
+- Hierarchical categories
+- Tag assignment and relationship support
+- Flexible content organization
+
+### Revision System
+- Full revision history tracking
+- Version comparison and restoration support
+- Editor tracking per revision
+
+### Article Linking & References
+- Internal article-to-article linking
+- External reference management
+- Structured citation storage
+
+### User Interaction
+- Article follow/unfollow functionality
+- Notification system for updates
+- Article reporting mechanism
+
+### System Utilities
+- Health check endpoint
+- External content API access
+- Preview endpoint for assisted content generation
+
+
 ## Integration with Core
 
 ## Notes for Developers
