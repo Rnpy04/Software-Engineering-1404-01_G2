@@ -14,7 +14,7 @@ class VersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Version
         fields = ['name', 'article', 'content', 'summary', 'editor_id', 'tags']
-        read_only_fields = ['editor_id']
+        read_only_fields = ['editor_id', 'summary', 'tags']
 
 
 class ArticleSerializer(serializers.ModelSerializer):
