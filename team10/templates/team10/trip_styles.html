@@ -1,26 +1,53 @@
-{% extends "team10/base.html" %}
-{% block title %}سبک‌ها{% endblock %}
+﻿{% extends "team10/base.html" %}
+{% block title %}سبک‌های سفر{% endblock %}
 
 {% block content %}
-    <div class="page-header">
-        <h2>سبک‌های سفر</h2>
-        <p>انتخاب سبک‌های مورد علاقه، طبیعت، فرهنگ و غذا</p>
-    </div>
+<section class="t10-page">
+  <section class="t10-section">
+    <h2>سبک‌های سفر</h2>
+    <p>سبک‌های موردعلاقه را انتخاب و اولویت‌بندی کنید.</p>
+  </section>
 
-    <div class="placeholder-section">
-        <div class="placeholder-icon">
-            <i class="fa-solid fa-palette"></i>
-        </div>
-        <div class="placeholder-text">
-            <h3>انتخاب سبک‌ها</h3>
-            <p>لیست سبک‌ها برای نمایش و بهرهبري بعداً اضافه خواهد شد.</p>
-        </div>
+  <section class="t10-card">
+    <div class="t10-style-row">
+      <label><input type="checkbox" name="styles" value="nature"> طبیعت</label>
+      <select><option>بالا</option><option selected>متوسط</option><option>پایین</option></select>
     </div>
+    <div class="t10-style-row">
+      <label><input type="checkbox" name="styles" value="history"> تاریخ</label>
+      <select><option>بالا</option><option selected>متوسط</option><option>پایین</option></select>
+    </div>
+    <div class="t10-style-row">
+      <label><input type="checkbox" name="styles" value="culture"> فرهنگ</label>
+      <select><option>بالا</option><option selected>متوسط</option><option>پایین</option></select>
+    </div>
+    <div class="t10-style-row">
+      <label><input type="checkbox" name="styles" value="food"> غذا</label>
+      <select><option>بالا</option><option selected>متوسط</option><option>پایین</option></select>
+    </div>
+    <div class="t10-style-row">
+      <label><input type="checkbox" name="styles" value="festival"> جشنواره</label>
+      <select><option>بالا</option><option selected>متوسط</option><option>پایین</option></select>
+    </div>
+    <div class="t10-style-row">
+      <label><input type="checkbox" name="styles" value="religious"> مذهبی</label>
+      <select><option>بالا</option><option selected>متوسط</option><option>پایین</option></select>
+    </div>
+    <div class="t10-style-row">
+      <label><input type="checkbox" name="styles" value="adventure"> ماجراجویی</label>
+      <select><option>بالا</option><option selected>متوسط</option><option>پایین</option></select>
+    </div>
+    <div class="t10-style-row">
+      <label><input type="checkbox" name="styles" value="shopping"> خرید</label>
+      <select><option>بالا</option><option selected>متوسط</option><option>پایین</option></select>
+    </div>
+  </section>
 
-    <div class="back-link">
-        <a href="/team10/trips/{{ trip_id }}/" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i>
-            بازگشت
-        </a>
-    </div>
+  <div class="t10-alert t10-alert--warn">محتوای کافی نیست…</div>
+
+  <div class="t10-actions">
+    <button class="t10-btn t10-btn--primary" type="button">اعمال تغییرات</button>
+    <a class="t10-btn t10-btn--secondary" href="/team10/trips/1/">بازگشت</a>
+  </div>
+</section>
 {% endblock %}

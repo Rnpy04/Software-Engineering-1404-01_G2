@@ -1,26 +1,41 @@
-{% extends "team10/base.html" %}
+﻿{% extends "team10/base.html" %}
 {% block title %}بازتولید برنامه{% endblock %}
 
 {% block content %}
-    <div class="page-header">
-        <h2>بازتولید برنامه سفر</h2>
-        <p>تغییر مجدد بی برنامه روزبه‌روز</p>
-    </div>
+<section class="t10-page">
+  <section class="t10-section">
+    <h2>بازتولید برنامه</h2>
+    <p>نسخه جدید برنامه بر اساس شرایط تازه تولید می‌شود.</p>
+  </section>
 
-    <div class="placeholder-section">
-        <div class="placeholder-icon">
-            <i class="fa-solid fa-arrow-rotate-left"></i>
-        </div>
-        <div class="placeholder-text">
-            <h3>بازتولید برنامه</h3>
-            <p>نام روال با ولگوریتم AI برای بهبود برنامه زودی جا خواهد شد.</p>
-        </div>
-    </div>
+  <div class="t10-actions">
+    <button class="t10-btn t10-btn--primary" type="button">بازتولید برنامه</button>
+  </div>
 
-    <div class="back-link">
-        <a href="/team10/trips/{{ trip_id }}/" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i>
-            بازگشت
-        </a>
-    </div>
+  <section class="t10-card">
+    <h3>تغییرات اعمال‌شده</h3>
+    <ul class="t10-change-list">
+      <li>جاذبه X حذف شد (به دلیل بسته بودن)</li>
+      <li>فعالیت Y جایگزین شد (به دلیل بارندگی)</li>
+    </ul>
+  </section>
+
+  <section class="t10-grid t10-grid--2">
+    <article class="t10-card">
+      <h3>نسخه قبلی</h3>
+      <p>زمان ثبت: ۱۴۰۴-۱۱-۲۰ ۱۲:۳۰</p>
+      <p>چیدمان اولیه بدون تغییرات اضطراری.</p>
+    </article>
+    <article class="t10-card">
+      <h3>نسخه جدید</h3>
+      <p>زمان ثبت: ۱۴۰۴-۱۱-۲۰ ۱۲:۴۵</p>
+      <p>به‌روزرسانی با توجه به شرایط آب‌وهوا و دسترسی.</p>
+    </article>
+  </section>
+
+  <div class="t10-actions">
+    <button class="t10-btn t10-btn--primary" type="button">تأیید نسخه جدید</button>
+    <button class="t10-btn t10-btn--secondary" type="button">بازگشت به نسخه قبلی</button>
+  </div>
+</section>
 {% endblock %}

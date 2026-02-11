@@ -1,26 +1,73 @@
-{% extends "team10/base.html" %}
-{% block title %}تحلیل هزینه{% endblock %}
+﻿{% extends "team10/base.html" %}
+{% block title %}هزینه سفر{% endblock %}
 
 {% block content %}
-    <div class="page-header">
-        <h2>تحلیل هزینه</h2>
-        <p>بررسی طفسیل هزینههای سفر</p>
-    </div>
+<section class="t10-page">
+  <section class="t10-section">
+    <h2>هزینه سفر</h2>
+    <p>تحلیل هزینه‌ها بر اساس داده نمایشی.</p>
+  </section>
 
-    <div class="placeholder-section">
-        <div class="placeholder-icon">
-            <i class="fa-solid fa-chart-pie"></i>
-        </div>
-        <div class="placeholder-text">
-            <h3>و تعداد نطت</h3>
-            <p>این روال عفلا و رای بعد روزها تعویض خواهد شد.</p>
-        </div>
+  <section class="t10-card">
+    <h3>دسته‌بندی هزینه‌ها</h3>
+    <div class="t10-cost-list">
+      <div class="t10-cost-row">
+        <span>اقامت</span>
+        <span>۳۵٪</span>
+        <strong>۴٬۲۰۰٬۰۰۰ تومان</strong>
+      </div>
+      <div class="t10-cost-row">
+        <span>حمل‌ونقل</span>
+        <span>۲۰٪</span>
+        <strong>۲٬۴۰۰٬۰۰۰ تومان</strong>
+      </div>
+      <div class="t10-cost-row">
+        <span>خوراک</span>
+        <span>۱۸٪</span>
+        <strong>۲٬۱۶۰٬۰۰۰ تومان</strong>
+      </div>
+      <div class="t10-cost-row">
+        <span>ورودی‌ها</span>
+        <span>۱۲٪</span>
+        <strong>۱٬۴۴۰٬۰۰۰ تومان</strong>
+      </div>
+      <div class="t10-cost-row">
+        <span>تفریحی/سایر</span>
+        <span>۱۵٪</span>
+        <strong>۱٬۸۰۰٬۰۰۰ تومان</strong>
+      </div>
     </div>
+  </section>
 
-    <div class="back-link">
-        <a href="/team10/trips/{{ trip_id }}/" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i>
-            بازگشت
-        </a>
-    </div>
+  <section class="t10-card t10-cost-summary">
+    <div><strong>جمع هزینه:</strong> ۱۲٬۰۰۰٬۰۰۰ تومان</div>
+    <div><strong>بودجه:</strong> ۱۲٬۵۰۰٬۰۰۰ تومان</div>
+    <div><strong>نتیجه:</strong> <span class="t10-badge t10-badge--active">در محدوده بودجه</span></div>
+  </section>
+
+  <section class="t10-section">
+    <h3>جزئیات هزینه</h3>
+    <details class="t10-details">
+      <summary>اقامت</summary>
+      <ul>
+        <li>هتل مرکز شهر - ۳٬۲۰۰٬۰۰۰ تومان</li>
+        <li>مالیات و خدمات - ۱٬۰۰۰٬۰۰۰ تومان</li>
+      </ul>
+    </details>
+    <details class="t10-details">
+      <summary>حمل‌ونقل</summary>
+      <ul>
+        <li>تاکسی درون‌شهری - ۹۰۰٬۰۰۰ تومان</li>
+        <li>رفت‌وبرگشت بین جاذبه‌ها - ۱٬۵۰۰٬۰۰۰ تومان</li>
+      </ul>
+    </details>
+    <details class="t10-details">
+      <summary>ورودی‌ها</summary>
+      <ul>
+        <li>بلیط ورودی مجموعه تاریخی - ۹۶۰٬۰۰۰ تومان</li>
+        <li>موزه‌ها - ۴۸۰٬۰۰۰ تومان</li>
+      </ul>
+    </details>
+  </section>
+</section>
 {% endblock %}

@@ -1,0 +1,13 @@
+﻿.trip-list { display: grid; gap: 12px; }
+.trip-card {
+  background: #fffef8;
+  border: 1px solid #d7decf;
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+.trip-card h3 { margin: 0 0 6px; color: var(--green-900); }
+.trip-card p { margin: 0; color: var(--ink-700); }
+.trip-meta { display: flex; gap: 14px; flex-wrap: wrap; color: #2f4132; }
+.trip-actions { display: flex; gap: 8px; flex-wrap: wrap; }

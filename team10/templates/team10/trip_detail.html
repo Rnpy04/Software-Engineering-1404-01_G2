@@ -1,68 +1,106 @@
-{% extends "team10/base.html" %}
+﻿{% extends "team10/base.html" %}
 {% block title %}جزئیات سفر{% endblock %}
 
 {% block content %}
-    {% if trip %}
-        <div class="page-header">
-            <h2>{{ trip.destination_name }}</h2>
-            <p>جزئیات سفر</p>
-        </div>
+<section class="t10-page">
+  <section class="t10-section">
+    <h2>جزئیات سفر</h2>
+    <p>نمایش اطلاعات کلی و برنامه روزانه سفر (نمونه نمایشی).</p>
+  </section>
 
-        <div class="trip-details-card">
-            <div class="trip-info-grid">
-                <div class="info-item">
-                    <span class="label">مزدا</span>
-                    <span class="value">{{ trip.destination_name }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">مبدأ</span>
-                    <span class="value">{{ trip.origin_name|default:"—" }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">مدت</span>
-                    <span class="value">{{ trip.days }} روز</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">تاریخ شروع</span>
-                    <span class="value">{{ trip.start_at|default:"—" }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">قالب</span>
-                    <span class="value">{{ trip.get_status_display }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">تعداد نفر</span>
-                    <span class="value">{{ trip.people }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">بودجه</span>
-                    <span class="value">{{ trip.budget|default:"—" }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">هزینه کل</span>
-                    <span class="value">{{ trip.total_cost|default:"—" }}</span>
-                </div>
-            </div>
-        </div>
+  <section class="t10-card t10-trip-summary">
+    <h3>خلاصه سفر</h3>
+    <div class="t10-grid t10-grid--3">
+      <div><strong>مبدأ:</strong> تهران</div>
+      <div><strong>مقصد:</strong> شیراز</div>
+      <div><strong>تاریخ شروع (شمسی):</strong> ۱۴۰۴-۰۲-۱۰</div>
+      <div><strong>مدت (روز):</strong> ۳</div>
+      <div><strong>تعداد نفرات:</strong> ۲</div>
+      <div><strong>بودجه (تومان):</strong> ۱۲٬۰۰۰٬۰۰۰</div>
+      <div><strong>وضعیت:</strong> <span class="t10-badge t10-badge--active">فعال</span></div>
+    </div>
+  </section>
 
-        <div class="actions">
-            <a class="btn btn-primary" href="/team10/trips/{{ trip.id }}/cost/">
-                <i class="fa-solid fa-calculator"></i>
-                تحلیل هزینه
-            </a>
-            <a class="btn btn-primary" href="/team10/trips/{{ trip.id }}/styles/">
-                <i class="fa-solid fa-palette"></i>
-                سبک‌ها
-            </a>
-            <a class="btn btn-secondary" href="/team10/trips/{{ trip.id }}/replan/">
-                <i class="fa-solid fa-arrow-rotate-left"></i>
-                بازتولید
-            </a>
-        </div>
-    {% else %}
-        <div class="alert alert-error">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            دیتابیس آماده نیست یا سفر پیدا نشد. (trip_id={{ trip_id }})
-        </div>
-    {% endif %}
+  <section class="t10-card">
+    <h3>برنامه روزانه</h3>
+
+    <div class="t10-day-block">
+      <h4>روز ۱</h4>
+      <div class="t10-item-row">
+        <div><strong>نام:</strong> باغ ارم</div>
+        <div><strong>نوع:</strong> جاذبه</div>
+        <div><strong>ساعت پیشنهادی:</strong> ۰۹:۰۰</div>
+        <div><strong>توضیح کوتاه:</strong> بازدید از فضای تاریخی و طبیعت.</div>
+      </div>
+      <div class="t10-transfer">جابجایی: ۲۰ دقیقه با خودرو – ۶ کیلومتر</div>
+      <div class="t10-item-row">
+        <div><strong>نام:</strong> رستوران سنتی</div>
+        <div><strong>نوع:</strong> غذا</div>
+        <div><strong>ساعت پیشنهادی:</strong> ۱۳:۳۰</div>
+        <div><strong>توضیح کوتاه:</strong> صرف ناهار محلی.</div>
+      </div>
+      <div class="t10-transfer">جابجایی: ۱۵ دقیقه با خودرو – ۴ کیلومتر</div>
+      <div class="t10-item-row">
+        <div><strong>نام:</strong> هتل مرکز شهر</div>
+        <div><strong>نوع:</strong> هتل</div>
+        <div><strong>ساعت پیشنهادی:</strong> ۱۹:۳۰</div>
+        <div><strong>توضیح کوتاه:</strong> استراحت و آماده‌سازی برای روز بعد.</div>
+      </div>
+    </div>
+
+    <div class="t10-day-block">
+      <h4>روز ۲</h4>
+      <div class="t10-item-row">
+        <div><strong>نام:</strong> تخت جمشید</div>
+        <div><strong>نوع:</strong> جاذبه</div>
+        <div><strong>ساعت پیشنهادی:</strong> ۰۸:۳۰</div>
+        <div><strong>توضیح کوتاه:</strong> بازدید مفصل از مجموعه تاریخی.</div>
+      </div>
+      <div class="t10-transfer">جابجایی: ۳۵ دقیقه با خودرو – ۲۲ کیلومتر</div>
+      <div class="t10-item-row">
+        <div><strong>نام:</strong> کافه سنتی</div>
+        <div><strong>نوع:</strong> غذا</div>
+        <div><strong>ساعت پیشنهادی:</strong> ۱۴:۰۰</div>
+        <div><strong>توضیح کوتاه:</strong> میان‌وعده و استراحت کوتاه.</div>
+      </div>
+      <div class="t10-transfer">جابجایی: ۲۵ دقیقه با خودرو – ۱۰ کیلومتر</div>
+      <div class="t10-item-row">
+        <div><strong>نام:</strong> بازار وکیل</div>
+        <div><strong>نوع:</strong> رویداد</div>
+        <div><strong>ساعت پیشنهادی:</strong> ۱۸:۰۰</div>
+        <div><strong>توضیح کوتاه:</strong> خرید و گردش عصرگاهی.</div>
+      </div>
+    </div>
+
+    <div class="t10-day-block">
+      <h4>روز ۳</h4>
+      <div class="t10-item-row">
+        <div><strong>نام:</strong> مسجد نصیرالملک</div>
+        <div><strong>نوع:</strong> جاذبه</div>
+        <div><strong>ساعت پیشنهادی:</strong> ۰۹:۳۰</div>
+        <div><strong>توضیح کوتاه:</strong> بازدید صبحگاهی از فضای تاریخی.</div>
+      </div>
+      <div class="t10-transfer">جابجایی: ۲۰ دقیقه با خودرو – ۷ کیلومتر</div>
+      <div class="t10-item-row">
+        <div><strong>نام:</strong> رستوران محلی</div>
+        <div><strong>نوع:</strong> غذا</div>
+        <div><strong>ساعت پیشنهادی:</strong> ۱۲:۳۰</div>
+        <div><strong>توضیح کوتاه:</strong> ناهار پیش از پایان سفر.</div>
+      </div>
+      <div class="t10-transfer">جابجایی: ۱۰ دقیقه با خودرو – ۳ کیلومتر</div>
+      <div class="t10-item-row">
+        <div><strong>نام:</strong> هتل مرکز شهر</div>
+        <div><strong>نوع:</strong> هتل</div>
+        <div><strong>ساعت پیشنهادی:</strong> ۱۵:۰۰</div>
+        <div><strong>توضیح کوتاه:</strong> تحویل اتاق و پایان برنامه.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="t10-actions">
+    <a class="t10-btn t10-btn--secondary" href="/team10/trips/1/cost/">هزینه سفر</a>
+    <a class="t10-btn t10-btn--secondary" href="/team10/trips/1/styles/">سبک‌ها</a>
+    <a class="t10-btn t10-btn--primary" href="/team10/trips/1/replan/">بازتولید برنامه</a>
+  </div>
+</section>
 {% endblock %}

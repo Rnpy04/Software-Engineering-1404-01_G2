@@ -1,76 +1,107 @@
-{% extends "team10/base.html" %}
+﻿{% extends "team10/base.html" %}
 {% block title %}سفرهای من{% endblock %}
 
 {% block content %}
     <div class="page-header">
         <h2>سفرهای من</h2>
+        <p>فهرست سفرها با داده نمایشی</p>
     </div>
 
-    {% if trips %}
-        <div class="trips-table">
-            {% for trip in trips %}
-                <div class="trip-row">
-                    <div class="trip-header">
-                        <h3>{{ trip.destination_name }}</h3>
-                        {% if trip.origin_name %}
-                            <p class="trip-origin">مبدأ: {{ trip.origin_name }}</p>
-                        {% endif %}
-                    </div>
-                    <div class="trip-details">
-                        <div class="detail-item">
-                            <span class="label">شروع:</span>
-                            <span class="value">{% if trip.start_at %}{{ trip.start_at }}{% else %}—{% endif %}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="label">مدت:</span>
-                            <span class="value">{{ trip.days }} روز</span>
-                        </div>
-                        {% if trip.total_cost %}
-                            <div class="detail-item">
-                                <span class="label">هزینه:</span>
-                                <span class="value">{{ trip.total_cost }}</span>
-                            </div>
-                        {% endif %}
-                        {% if trip.budget %}
-                            <div class="detail-item">
-                                <span class="label">بودجه:</span>
-                                <span class="value">{{ trip.budget }}</span>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="trip-status">
-                        <span class="badge badge-{{ trip.status }}">
-                            {{ trip.get_status_display }}
-                        </span>
-                    </div>
-                    <div class="trip-actions">
-                        <a class="btn btn-small" href="/team10/trips/{{ trip.id }}/">
-                            <i class="fa-solid fa-eye"></i>
-                            جزئیات
-                        </a>
-                        <a class="btn btn-small" href="/team10/trips/{{ trip.id }}/cost/">
-                            <i class="fa-solid fa-calculator"></i>
-                            هزینه
-                        </a>
-                        <a class="btn btn-small" href="/team10/trips/{{ trip.id }}/styles/">
-                            <i class="fa-solid fa-palette"></i>
-                            سبک‌ها
-                        </a>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fa-solid fa-inbox"></i>
+    <section class="t10-filter-box">
+        <div class="t10-filter-grid">
+            <div class="t10-field">
+                <label for="t10-status">وضعیت</label>
+                <select id="t10-status">
+                    <option>همه</option>
+                    <option>پیش‌نویس</option>
+                    <option>فعال</option>
+                    <option>انجام‌شده</option>
+                </select>
             </div>
-            <div class="empty-title">چیزی برای نمایش نیست</div>
-            <p>اگر DB هنوز migrate نشده، اول migrate کنید یا از خانه سفر بسازید.</p>
-            <a class="btn btn-primary" href="/team10/create-trip/">
-                <i class="fa-solid fa-plus"></i>
-                سفر اول را بسازید
-            </a>
+
+            <div class="t10-field">
+                <label for="t10-date-from">بازه تاریخ (از)</label>
+                <input id="t10-date-from" type="text" placeholder="۱۴۰۴-۰۱-۰۱">
+            </div>
+
+            <div class="t10-field">
+                <label for="t10-date-to">بازه تاریخ (تا)</label>
+                <input id="t10-date-to" type="text" placeholder="۱۴۰۴-۱۲-۲۹">
+            </div>
+
+            <div class="t10-field">
+                <label for="t10-destination">مقصد</label>
+                <input id="t10-destination" type="search" placeholder="مثال: شیراز">
+            </div>
         </div>
-    {% endif %}
+
+        <div class="t10-filter-grid t10-filter-grid--secondary">
+            <div class="t10-field t10-field--wide">
+                <label for="t10-search">جستجو در مقصد یا کد سفر</label>
+                <input id="t10-search" type="search" placeholder="مثال: شیراز یا کد-۱۰۲">
+            </div>
+
+            <div class="t10-field">
+                <label for="t10-sort">مرتب‌سازی</label>
+                <select id="t10-sort">
+                    <option>جدیدترین</option>
+                    <option>قدیمی‌ترین</option>
+                    <option>هزینه</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    {% with has_data=True %}
+        {% if has_data %}
+            <section class="t10-trip-table-wrap">
+                <table class="t10-trip-table">
+                    <thead>
+                        <tr>
+                            <th>مبدأ</th>
+                            <th>مقصد</th>
+                            <th>تاریخ شروع شمسی</th>
+                            <th>مدت (روز)</th>
+                            <th>بودجه (تومان)</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>تهران</td>
+                            <td>شیراز</td>
+                            <td>۱۴۰۴-۰۲-۱۰</td>
+                            <td>۴</td>
+                            <td>۱۲٬۰۰۰٬۰۰۰</td>
+                            <td><span class="t10-badge t10-badge--draft">پیش‌نویس</span></td>
+                            <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/1/">مشاهده جزئیات</a></td>
+                        </tr>
+                        <tr>
+                            <td>اصفهان</td>
+                            <td>تبریز</td>
+                            <td>۱۴۰۴-۰۳-۲۲</td>
+                            <td>۳</td>
+                            <td>۹٬۵۰۰٬۰۰۰</td>
+                            <td><span class="t10-badge t10-badge--active">فعال</span></td>
+                            <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/2/">مشاهده جزئیات</a></td>
+                        </tr>
+                        <tr>
+                            <td>مشهد</td>
+                            <td>کیش</td>
+                            <td>۱۴۰۴-۰۵-۰۸</td>
+                            <td>۵</td>
+                            <td>۱۸٬۳۰۰٬۰۰۰</td>
+                            <td><span class="t10-badge t10-badge--done">انجام‌شده</span></td>
+                            <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/3/">مشاهده جزئیات</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        {% else %}
+            <div class="t10-empty">
+                <h3>هیچ سفری یافت نشد…</h3>
+            </div>
+        {% endif %}
+    {% endwith %}
 {% endblock %}

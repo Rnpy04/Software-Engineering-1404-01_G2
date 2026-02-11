@@ -1,41 +1,58 @@
-{% extends "team10/base.html" %}
+﻿{% extends "team10/base.html" %}
 {% block title %}داشبورد | تیم ۱۰{% endblock %}
 
 {% block content %}
-    <section class="hero">
-        <div class="hero-content">
-            <h2>سفرهای شما</h2>
-            <p>سفر جدید بسازید یا وارد لیست سفرها شوید.</p>
+<section class="hero t10-home-hero">
+    <div class="hero-content t10-home-hero-content">
+        <h2>سفرهای شما</h2>
+        <p>سفر جدید بسازید یا وارد لیست سفرها شوید.</p>
+        <div class="t10-home-hero-actions">
+            <a class="t10-btn t10-btn--primary" href="/team10/create-trip/">ایجاد سفر جدید</a>
+            <a class="t10-btn t10-btn--secondary" href="/team10/trips/">سفرهای من</a>
         </div>
-    </section>
-
-    <div class="section-header">
-        <h3>عملیات سریع</h3>
     </div>
+</section>
 
-    <div class="services-grid">
-        <a class="service-card" href="/team10/create-trip/">
-            <div class="card-content-wrapper">
-                <div class="card-icon">
-                    <i class="fa-solid fa-plus"></i>
-                </div>
-                <div class="card-info">
-                    <h3>ایجاد سفر جدید</h3>
-                    <span>با وارد کردن مبدأ، مقصد، تاریخ و مدت سفر.</span>
-                </div>
-            </div>
-        </a>
+<div class="section-header">
+    <h3>عملیات سریع</h3>
+</div>
 
-        <a class="service-card" href="/team10/trips/">
-            <div class="card-content-wrapper">
-                <div class="card-icon">
-                    <i class="fa-solid fa-suitcase"></i>
-                </div>
-                <div class="card-info">
-                    <h3>سفرهای من</h3>
-                    <span>لیست سفرها و ورود به جزئیات هر سفر.</span>
-                </div>
+<section class="t10-home-summary">
+    <article class="t10-mini-card">
+        <span class="t10-mini-card__label">تعداد سفرها</span>
+        <strong class="t10-mini-card__value">۱۲</strong>
+    </article>
+    <article class="t10-mini-card">
+        <span class="t10-mini-card__label">سفر فعال</span>
+        <strong class="t10-mini-card__value">۳</strong>
+    </article>
+    <article class="t10-mini-card">
+        <span class="t10-mini-card__label">میانگین هزینه</span>
+        <strong class="t10-mini-card__value">۹٬۸۰۰٬۰۰۰ تومان</strong>
+    </article>
+</section>
+
+<section class="services-grid t10-home-actions-grid">
+    <article class="service-card">
+        <div class="card-content-wrapper">
+            <div class="card-icon"><i class="fa-solid fa-plus"></i></div>
+            <div class="card-info">
+                <h3>ایجاد سفر جدید</h3>
+                <span>با وارد کردن مبدا، مقصد، تاریخ و مدت سفر.</span>
             </div>
-        </a>
-    </div>
+        </div>
+        <a class="t10-btn t10-btn--primary" href="/team10/create-trip/">ورود</a>
+    </article>
+
+    <article class="service-card">
+        <div class="card-content-wrapper">
+            <div class="card-icon"><i class="fa-solid fa-suitcase"></i></div>
+            <div class="card-info">
+                <h3>سفرهای من</h3>
+                <span>لیست سفرها و ورود به جزئیات هر سفر.</span>
+            </div>
+        </div>
+        <a class="t10-btn t10-btn--secondary" href="/team10/trips/">ورود</a>
+    </article>
+</section>
 {% endblock %}

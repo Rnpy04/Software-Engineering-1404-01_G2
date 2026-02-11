@@ -1,4 +1,4 @@
-/* overrideهای خاص برای صفحه create-trip، برای match با styles.css اصلی */
+﻿/* overrideهای خاص برای صفحه create-trip، برای match با styles.css اصلی */
 
 /* فرم اصلی */
 .auth-card {
@@ -33,7 +33,7 @@
 .chip {
     display: inline-flex;
     align-items: center;
-    background: rgba(46, 125, 50, 0.1);  /* بر اساس --forest-green */
+    background: rgba(46, 125, 50, 0.1);
     padding: 8px 16px;
     border-radius: 999px;
     cursor: pointer;
