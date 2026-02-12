@@ -33,6 +33,7 @@ class WikiTag(models.Model):
 
     class Meta:
         db_table = 'wiki_tags'
+# مدل اصلی مقاله؛ شامل وضعیت انتشار، نسخه‌بندی (revision) و شاخص‌های کیفیت/بازدید برای رتبه‌بندی و نمایش.
 class WikiArticle(models.Model):
     id_article = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -55,6 +56,7 @@ class WikiArticle(models.Model):
 
     tags = models.ManyToManyField(WikiTag, related_name='articles', blank=True)
 
+    # شناسه کاربر از سرویس احراز هویت می‌آید (ForeignKey نیست تا وابستگی مستقیم بین سرویس‌ها ایجاد نشود).
     author_user_id = models.UUIDField(null=True)
     last_editor_user_id = models.UUIDField(null=True)
 
@@ -67,6 +69,7 @@ class WikiArticle(models.Model):
     quality_avg = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     quality_count = models.IntegerField(default=0)
 
+    # شماره نسخه فعلی برای دسترسی سریع؛ جزئیات هر نسخه در جدول WikiArticleRevision ذخیره می‌شود.
     current_revision_no = models.IntegerField(default=1)
     view_count = models.IntegerField(default=0)
     class Meta:
@@ -82,6 +85,7 @@ class WikiArticleLink(models.Model):
 
     class Meta:
         db_table = 'wiki_article_links'
+        # جلوگیری از ثبت لینک تکراری بین دو مقاله (from -> to).
         unique_together = ('from_article', 'to_article')
 
 
