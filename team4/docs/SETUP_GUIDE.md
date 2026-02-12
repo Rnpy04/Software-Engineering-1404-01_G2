@@ -169,6 +169,16 @@ Expected output:
 ```
 ✅ Done: 20417 villages created, 0 skipped
 ```
+```powershell
+python manage.py load_amenity
+```
+```powershell
+python manage.py load_category
+```
+```powershell
+python manage.py load_hotels
+```
+
 
 
 **Note**: This process takes 2-3 minutes due to 1112 database inserts with geolocation data.

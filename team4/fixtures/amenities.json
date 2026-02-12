@@ -88,5 +88,14 @@
       "name_en": "24-Hour Reception",
       "icon": "reception"
     }
+  },
+  {
+    "model": "team4.amenity",
+    "pk": 11,
+    "fields": {
+      "name_fa": "خدمات ویلچر",
+      "name_en": "Wheelchair Service",
+      "icon": "wheelchair"
+    }
   }
 ]
