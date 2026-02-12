@@ -4,11 +4,15 @@ from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from django.core.exceptions import ObjectDoesNotExist
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 from .fields import Point
+import os
+import requests
+from dotenv import load_dotenv
 
 from core.auth import api_login_required
 from team4.models import Facility, Category, City, Amenity, Province, Village, RegionType, Favorite, Review
@@ -18,12 +22,13 @@ from team4.serializers import (
     CategorySerializer, CitySerializer, AmenitySerializer,
     FacilityCreateSerializer, RegionSearchResultSerializer,
     FavoriteSerializer, ReviewSerializer, ReviewCreateSerializer,
-    FacilityFilterSerializer, NearbyPlaceSerializer
+    FacilityFilterSerializer, NearbyPlaceSerializer, RoutingRequestSerializer
 )
 from team4.services.facility_service import FacilityService
 from team4.services.region_service import RegionService
 
 TEAM_NAME = "team4"
+load_dotenv()
 
 
 # =====================================================
@@ -1080,4 +1085,74 @@ class ReviewViewSet(viewsets.ModelViewSet):
             return Response(
                 {'error': 'نظر یافت نشد'},
                 status=status.HTTP_404_NOT_FOUND
+            )
+       
+class RoutingView(APIView):
+    """
+    API View to handle routing requests via an external Map Service.
+    """
+
+    @extend_schema(
+        summary="Calculate route and navigation",
+        description="Send origin and destination coordinates to receive route details, distance, and ETA.",
+        request=RoutingRequestSerializer,
+        responses={
+            200: OpenApiResponse(description="Route data retrieved successfully"),
+            400: OpenApiResponse(description="Invalid input data"),
+            503: OpenApiResponse(description="Map service is unavailable")
+        },
+        tags=['Navigation']
+    )
+    def post(self, request):
+        serializer = RoutingRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Extract Point objects from validated data
+        origin_point = serializer.validated_data['origin']
+        dest_point = serializer.validated_data['destination']
+        
+        # Format coordinates for the external service (Latitude,Longitude)
+        origin_str = f"{origin_point.latitude},{origin_point.longitude}"
+        dest_str = f"{dest_point.latitude},{dest_point.longitude}"
+        
+        # Configuration
+        service_url = "https://api.neshan.org/v4/direction"
+        api_key = os.getenv('MAP_SERVICE_KEY')
+        headers = {
+            'Api-Key': api_key
+        }
+        
+        # Prepare Query Parameters (Waypoints removed)
+        params = {
+            'type': serializer.validated_data['type'],
+            'origin': origin_str,
+            'destination': dest_str,
+            'avoidTrafficZone': str(serializer.validated_data.get('avoidTrafficZone', False)).lower(),
+            'avoidOddEvenZone': str(serializer.validated_data.get('avoidOddEvenZone', False)).lower(),
+            'alternative': str(serializer.validated_data.get('alternative', False)).lower(),
+        }
+
+        try:
+            response = requests.get(service_url, headers=headers, params=params, timeout=10)
+            result = response.json()
+
+            # If the service returns a 200, we add our internal distance calculation
+            if response.status_code == 200:
+                result['internal_air_distance_km'] = round(origin_point.distance(dest_point), 3)
+                return Response(result, status=status.HTTP_200_OK)
+            
+            # Return the error from the map service with our Farsi detail
+            return Response(
+                {
+                    "detail": "خطا در دریافت اطلاعات از سرویس نقشه. لطفا ورودی‌ها را بررسی کنید.",
+                    "service_response": result
+                }, 
+                status=response.status_code
+            )
+            
+        except requests.exceptions.RequestException:
+            return Response(
+                {"detail": "خطا در برقراری ارتباط با سرویس نقشه. لطفاً وضعیت اینترنت را بررسی کنید."}, 
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
