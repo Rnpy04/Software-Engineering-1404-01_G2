@@ -1,43 +1,78 @@
 {% extends "team10/base.html" %}
+{% load static %}
 {% block title %}جزئیات سفر | ایران‌نما{% endblock %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'team10/styles/trip-detail.css' %}">
+{% endblock %}
+
 {% block content %}
-<section class="t10-page">
-  <section class="t10-section">
-    <h2>جزئیات سفر</h2>
-    <p>نمایش اطلاعات کلی و برنامه روزانه سفر.</p>
-  </section>
+<section class="t10-page t10-trip-detail t10-digit-scope">
 
   {% if trip %}
-        <div class="trip-details-card">
-            <div class="trip-info-grid">
-                <div class="info-item">
-                    <span class="label">مقصد</span>
-                    <span class="value">{{ trip.destination_name|default:trip.requirements.destination_name }}</span>
+        <div class="t10-summary-card">
+            <div class="t10-summary-head">
+                <h2>جزئیات سفر</h2>
+                <p>نمایش اطلاعات کلی و برنامه روزانه سفر.</p>
+            </div>
+            <div class="t10-summary-grid">
+                <div class="t10-info-item">
+                    <span class="t10-info-label"><span class="t10-info-icon">📍</span>مقصد</span>
+                    <span class="t10-info-value t10-no-digit">{{ trip.destination_name|default:trip.requirements.destination_name }}</span>
                 </div>
-                <div class="info-item">
-                    <span class="label">مدت</span>
-                    <span class="value">{{ days_count }} روز</span>
+                <div class="t10-info-item">
+                    <span class="t10-info-label">مدت</span>
+                    <span class="t10-info-value">{{ days_count }} روز</span>
                 </div>
-                <div class="info-item">
-                    <span class="label">تاریخ شروع</span>
-                    <span class="value">{{ trip.requirements.start_at|date:"Y-m-d"|default:"—" }}</span>
+                <div class="t10-info-item">
+                    <span class="t10-info-label">تاریخ شروع</span>
+                    <span class="t10-info-value">{{ trip.requirements.start_at|date:"Y-m-d"|default:"—" }}</span>
                 </div>
-                <div class="info-item">
-                    <span class="label">وضعیت</span>
-                    <span class="value">{{ trip.get_status_display }}</span>
+                <div class="t10-info-item">
+                    <span class="t10-info-label">وضعیت</span>
+                    <span class="t10-info-value t10-status-badge">
+                      {% with s=trip.get_status_display|default:"" %}
+                        {% with s_lower=s|lower %}
+                          {% if s_lower == "draft" %}
+                            پیش‌نویس
+                          {% elif s_lower == "active" %}
+                            فعال
+                          {% elif s_lower == "finished" or s_lower == "done" or s_lower == "completed" %}
+                            تمام‌شده
+                          {% elif s_lower == "cancelled" or s_lower == "canceled" %}
+                            لغوشده
+                          {% else %}
+                            {{ s|default:"—" }}
+                          {% endif %}
+                        {% endwith %}
+                      {% endwith %}
+                    </span>
                 </div>
-                <div class="info-item">
-                    <span class="label">تعداد نفر</span>
-                    <span class="value">{{ trip.requirements.travelers_count }}</span>
+                <div class="t10-info-item">
+                    <span class="t10-info-label">تعداد نفر</span>
+                    <span class="t10-info-value">{{ trip.requirements.travelers_count }}</span>
                 </div>
-                <div class="info-item">
-                    <span class="label">سطح بودجه</span>
-                    <span class="value">{{ trip.requirements.get_budget_level_display|default:"—" }}</span>
+                <div class="t10-info-item">
+                    <span class="t10-info-label">سطح بودجه</span>
+                    <span class="t10-info-value">
+                      {% with b=trip.requirements.get_budget_level_display|default:"" %}
+                        {% with b_lower=b|lower %}
+                          {% if b_lower == "economy" or b_lower == "economic" or b_lower == "economical" %}
+                            اقتصادی
+                          {% elif b_lower == "medium" or b_lower == "normal" or b_lower == "standard" %}
+                            متوسط
+                          {% elif b_lower == "luxury" or b_lower == "lux" %}
+                            لوکس
+                          {% else %}
+                            {{ b|default:"—" }}
+                          {% endif %}
+                        {% endwith %}
+                      {% endwith %}
+                    </span>
                 </div>
-                <div class="info-item">
-                    <span class="label">هزینه کل</span>
-                    <span class="value">{{ total_cost|floatformat:0|default:"—" }} تومان</span>
+                <div class="t10-info-item">
+                    <span class="t10-info-label">هزینه کل</span>
+                    <span class="t10-info-value">{{ total_cost|floatformat:0|default:"—" }} تومان</span>
                 </div>
             </div>
         </div>
@@ -46,17 +81,19 @@
     <h3>برنامه روزانه</h3>
 
     {% for day in days_list %}
-    <div class="t10-day-block" style="margin-bottom: 2rem; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem;">
-      <h4 style="background: #f5f5f5; padding: 0.5rem 1rem; margin: -1rem -1rem 1rem -1rem; border-radius: 8px 8px 0 0;">
-        روز {{ day.day_number }} - {{ day.date|date:"Y-m-d" }}
-      </h4>
+    <div class="t10-day-card">
+      <div class="t10-day-header">
+        <h4>روز {{ day.day_number }}</h4>
+        <span class="t10-day-date">{{ day.date|date:"Y-m-d" }}</span>
+      </div>
       
       {% for item in day.activities %}
       
       {% if item.transfer %}
-      <div class="t10-transfer-info" style="background: #e8f4fd; padding: 0.5rem 1rem; margin: 0.5rem 0; border-radius: 4px; border-right: 3px solid #2196f3;">
-        <span style="color: #1976d2;">
-          <strong>🚗 انتقال:</strong>
+      <div class="t10-transfer-row">
+        <span class="t10-transfer-emoji" data-mode="{{ item.transfer.transport_mode }}">🚗</span>
+        <span class="t10-transfer-text">
+          جابجایی:
           {% if item.transfer.transport_mode == "WALKING" %}
             پیاده‌روی
           {% elif item.transfer.transport_mode == "TAXI" %}
@@ -77,20 +114,28 @@
       </div>
       {% endif %}
       
-      <div class="t10-item-row" style="padding: 0.75rem; background: #fafafa; border-radius: 4px; margin-bottom: 0.5rem;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-          <div><strong>فعالیت:</strong> {{ item.plan.description|truncatechars:50|default:"-" }}</div>
-          <div><strong>نوع:</strong> {{ item.activity_type_fa }}</div>
-          <div><strong>ساعت:</strong> {{ item.plan.start_at|date:"H:i" }} تا {{ item.plan.end_at|date:"H:i" }}</div>
-          <div><strong>هزینه:</strong> {{ item.plan.cost|floatformat:0|default:"0" }} تومان</div>
+      <div class="t10-activity-row" data-activity-type="{{ item.activity_type_fa }}">
+        <div class="t10-activity-time">
+          {{ item.plan.start_at|date:"H:i" }} تا {{ item.plan.end_at|date:"H:i" }}
         </div>
+        <div class="t10-activity-main">
+          <div class="t10-activity-title">{{ item.plan.description|truncatechars:50|default:"-" }}</div>
+          <div class="t10-activity-meta">
+            <span class="t10-type-badge">
+              <span class="t10-type-emoji" aria-hidden="true"></span>
+              <span class="t10-type-text">{{ item.activity_type_fa }}</span>
+            </span>
+            <span class="t10-activity-cost">{{ item.plan.cost|floatformat:0|default:"0" }} تومان</span>
+          </div>
+        </div>
+        <div class="t10-activity-emoji" aria-hidden="true">📍</div>
       </div>
       
       {% endfor %}
     </div>
     {% empty %}
-    <div class="t10-day-block">
-      <div class="t10-item-row">
+    <div class="t10-day-card">
+      <div class="t10-activity-empty">
         <div>برنامه‌ای برای این سفر ثبت نشده است.</div>
       </div>
     </div>
@@ -100,26 +145,33 @@
   <section class="t10-card">
     <h3>هتل‌ها</h3>
     {% for hotel in hotel_schedules %}
-    <div class="t10-day-block">
-      <div class="t10-item-row">
-        <div><strong>شناسه هتل:</strong> {{ hotel.hotel_id }}</div>
-        <div><strong>تعداد اتاق:</strong> {{ hotel.rooms_count }}</div>
-        <div><strong>هزینه:</strong> {{ hotel.cost|floatformat:0 }} تومان</div>
+    <div class="t10-day-card t10-hotel-card">
+      <div class="t10-activity-row">
+        <div class="t10-activity-time">🏨 هتل</div>
+        <div class="t10-activity-main">
+          <div class="t10-activity-title">شناسه هتل: {{ hotel.hotel_id }}</div>
+          <div class="t10-activity-meta">
+            <span class="t10-type-badge">اتاق‌ها: {{ hotel.rooms_count }}</span>
+            <span class="t10-activity-cost">{{ hotel.cost|floatformat:0 }} تومان</span>
+          </div>
+        </div>
+        <div class="t10-activity-emoji" aria-hidden="true">🏨</div>
       </div>
-      <div class="t10-transfer">
-        بازه اقامت: {{ hotel.start_at|date:"Y-m-d"|default:"-" }} تا {{ hotel.end_at|date:"Y-m-d"|default:"-" }}
+      <div class="t10-transfer-row">
+        <span class="t10-transfer-emoji">📅</span>
+        <span class="t10-transfer-text">بازه اقامت: {{ hotel.start_at|date:"Y-m-d"|default:"-" }} تا {{ hotel.end_at|date:"Y-m-d"|default:"-" }}</span>
       </div>
     </div>
     {% empty %}
-    <div class="t10-day-block">
-      <div class="t10-item-row">
+    <div class="t10-day-card">
+      <div class="t10-activity-empty">
         <div>هتلی برای این سفر ثبت نشده است.</div>
       </div>
     </div>
     {% endfor %}
   </section>
 
-  <div class="t10-actions">
+  <div class="t10-sticky-actions">
     <a class="t10-btn t10-btn--secondary" href="{% url 'team10:trip_cost' trip.id %}">هزینه سفر</a>
     <a class="t10-btn t10-btn--secondary" href="{% url 'team10:trip_styles' trip.id %}">سبک‌ها</a>
     <a class="t10-btn t10-btn--primary" href="{% url 'team10:trip_replan' trip.id %}">بازتولید برنامه</a>
@@ -131,4 +183,75 @@
   </section>
   {% endif %}
 </section>
+
+<script>
+  (function() {
+    function toPersianDigits(value) {
+      return String(value).replace(/\d/g, function(digit) {
+        return "۰۱۲۳۴۵۶۷۸۹"[digit];
+      });
+    }
+
+    function replaceDigitsInNode(node) {
+      if (!node || !node.nodeValue) return;
+      node.nodeValue = toPersianDigits(node.nodeValue);
+    }
+
+    function shouldSkipNode(node) {
+      if (!node || !node.parentElement) return true;
+      if (node.parentElement.closest('.t10-no-digit')) return true;
+      if (node.parentElement.closest('script, style, input, textarea, select, option')) return true;
+      return false;
+    }
+
+    function convertAllDigits() {
+      const scope = document.querySelector('.t10-digit-scope');
+      if (!scope) return;
+      const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, null);
+      let current;
+      while ((current = walker.nextNode())) {
+        if (shouldSkipNode(current)) continue;
+        replaceDigitsInNode(current);
+      }
+    }
+
+    function setActivityEmojis() {
+      const map = [
+        { keys: ["غذا", "رستوران", "Food", "Restaurant", "Meal"], emoji: "🍽️" },
+        { keys: ["گردشگری", "جاذبه", "Attraction", "Sightseeing", "Tourism"], emoji: "🏛️" },
+        { keys: ["فرهنگی", "Culture", "Cultural", "Museum", "Art"], emoji: "🎭" },
+        { keys: ["خرید", "Shopping", "Mall", "Market"], emoji: "🛍️" },
+        { keys: ["طبیعت", "Nature", "Park", "Forest"], emoji: "🌿" },
+        { keys: ["هتل", "اقامت", "Hotel", "Stay", "Lodging"], emoji: "🏨" },
+        { keys: ["استراحت", "Relax", "Rest"], emoji: "🧘" }
+      ];
+
+      document.querySelectorAll('.t10-activity-row[data-activity-type]').forEach(function(row) {
+        const type = (row.getAttribute('data-activity-type') || '').trim();
+        const hit = map.find(function(m) {
+          return m.keys.some(function(k) { return type.toLowerCase().includes(String(k).toLowerCase()); });
+        });
+        const emoji = hit ? hit.emoji : "📍";
+        const emojiEl = row.querySelector('.t10-activity-emoji');
+        if (emojiEl) emojiEl.textContent = emoji;
+        const badgeEmoji = row.querySelector('.t10-type-emoji');
+        if (badgeEmoji) badgeEmoji.textContent = emoji;
+      });
+
+      document.querySelectorAll('.t10-transfer-emoji[data-mode]').forEach(function(el) {
+        const mode = (el.getAttribute('data-mode') || '').toUpperCase();
+        const rowText = (el.closest('.t10-transfer-row') || {}).textContent || "";
+        if (mode === "WALKING" || rowText.indexOf("پیاده") !== -1) el.textContent = "🚶";
+        else if (mode === "PUBLIC_TRANSIT") el.textContent = "🚌";
+        else if (mode === "TAXI") el.textContent = "🚕";
+        else el.textContent = "🚗";
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      setActivityEmojis();
+      convertAllDigits();
+    });
+  })();
+</script>
 {% endblock %}
