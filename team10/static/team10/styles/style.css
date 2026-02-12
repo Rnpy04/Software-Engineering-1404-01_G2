@@ -959,14 +959,18 @@ body {
 }
 
 /* Draw a tiny fixed band over the viewport top to hide browser seam artifacts */
+body {
+  position: relative;
+}
+
 body::before {
   content: "";
-  position: fixed;
+  position: absolute;          /* به جای fixed */
   top: 0;
   right: 0;
   left: 0;
   height: 28px;
   background: linear-gradient(135deg, var(--forest-green), var(--persian-blue));
-  z-index: 999;
+  z-index: -1;
   pointer-events: none;
 }
