@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 
 class TripRequirements(models.Model):
@@ -68,6 +69,40 @@ class Trip(models.Model):
 
     def __str__(self):
         return f"Trip {self.id} - User {self.user_id} ({self.status})"
+
+    def _get_trip_date_range(self):
+        req = getattr(self, "requirements", None)
+        if not req:
+            return None, None
+
+        start_at = getattr(req, "start_at", None)
+        end_at = getattr(req, "end_at", None)
+        if not start_at or not end_at:
+            return None, None
+
+        return timezone.localdate(start_at), timezone.localdate(end_at)
+
+    @property
+    def display_status(self) -> str:
+        start_date, end_date = self._get_trip_date_range()
+        if not start_date or not end_date:
+            return self.status
+
+        today = timezone.localdate()
+        if start_date > today:
+            return "DRAFT"
+        if start_date <= today < end_date:
+            return "IN_PROGRESS"
+        return "COMPLETED"
+
+    @property
+    def display_status_label_fa(self) -> str:
+        status_display = {
+            "DRAFT": "پیش‌نویس",
+            "IN_PROGRESS": "در حال اجرا",
+            "COMPLETED": "پایان‌یافته",
+        }
+        return status_display.get(self.display_status, "نامشخص")
 
     def calculate_total_cost(self):
         """Calculate total cost of the trip including activities, hotels, and transportation."""

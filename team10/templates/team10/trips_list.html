@@ -94,18 +94,14 @@
                 <td>{{ trip.days }}</td>
                 <td>{% if trip.total_cost %}{{ trip.total_cost|floatformat:0 }}{% else %}-{% endif %}</td>
                 <td>
-                    {% if trip.status == "DRAFT" %}
-                        <span class="t10-badge t10-badge--draft">{{ trip.status_fa }}</span>
-                    {% elif trip.status == "IN_PROGRESS" %}
-                        <span class="t10-badge t10-badge--active">{{ trip.status_fa }}</span>
-                    {% elif trip.status == "CONFIRMED" %}
-                        <span class="t10-badge t10-badge--confirmed">{{ trip.status_fa }}</span>
-                    {% elif trip.status == "EXPIRED" %}
-                        <span class="t10-badge t10-badge--done">{{ trip.status_fa }}</span>
-                    {% elif trip.status == "CANCELLED" %}
-                        <span class="t10-badge t10-badge--cancelled">{{ trip.status_fa }}</span>
+                    {% if trip.display_status == "DRAFT" %}
+                        <span class="t10-badge t10-badge--draft">{{ trip.display_status_label_fa }}</span>
+                    {% elif trip.display_status == "IN_PROGRESS" %}
+                        <span class="t10-badge t10-badge--active">{{ trip.display_status_label_fa }}</span>
+                    {% elif trip.display_status == "COMPLETED" %}
+                        <span class="t10-badge t10-badge--done">{{ trip.display_status_label_fa }}</span>
                     {% else %}
-                        <span class="t10-badge">{{ trip.status_fa }}</span>
+                        <span class="t10-badge">{{ trip.display_status_label_fa }}</span>
                     {% endif %}
                 </td>
                 <td><a class="t10-btn t10-btn--secondary" href="{% url 'team10:trip_detail' trip.id %}">مشاهده جزئیات</a></td>

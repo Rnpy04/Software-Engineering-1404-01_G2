@@ -1,4 +1,4 @@
-{% extends "team10/base.html" %}
+﻿{% extends "team10/base.html" %}
 {% load static %}
 {% block title %}جزئیات سفر | ایران‌نما{% endblock %}
 
@@ -37,6 +37,12 @@
                             پیش‌نویس
                           {% elif s_lower == "active" %}
                             فعال
+                          {% elif s_lower == "in_progress" %}
+                            در حال انجام
+                          {% elif s_lower == "completed" %}
+                            تمام‌شده
+                          {% elif s_lower == "confirmed" or s_lower == "approved" %}
+                            تایید شده
                           {% elif s_lower == "finished" or s_lower == "done" or s_lower == "completed" %}
                             تمام‌شده
                           {% elif s_lower == "cancelled" or s_lower == "canceled" %}
