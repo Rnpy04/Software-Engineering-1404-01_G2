@@ -182,7 +182,8 @@ print("\n📊 Summary:")
 for day in trip.days.all().order_by('day_index'):
     print(f"\n  روز {day.day_index} ({day.specific_date}):")
     for item in day.items.all().order_by('sort_order'):
-        print(f"    - {item.start_time}-{item.end_time}: {item.title} ({item.estimated_cost:,} تومان)")
+        print(
+            f"    - {item.start_time}-{item.end_time}: {item.title} ({item.estimated_cost:,} تومان)")
 
 print("\n🎉 You can now test APIs with this data!")
 print(f"   GET /api/trips/{trip.trip_id}/ to see the full trip")
