@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from core.auth import api_login_required
-from .models import Trip, TripRequirements, PreferenceConstraint
+from .models import Trip, TripRequirements, PreferenceConstraint, TransferPlan
 from .services import trip_planning_service
 
 
@@ -323,15 +323,54 @@ def trip_detail(request, trip_id: int):
         if not trip:
             raise Http404()
         req = trip.requirements
-        days = (req.end_at - req.start_at).days if req.end_at and req.start_at else 0
+        days_count = (req.end_at - req.start_at).days if req.end_at and req.start_at else 0
+        
+        # Group activities by day
+        daily_plans = list(trip.daily_plans.all().order_by('start_at'))
+        
+        # Get all transfers for this trip
+        try:
+            transfers = {t.to_daily_plan_id: t for t in trip.transfer_plans.all()}
+        except Exception:
+            transfers = {}
+        
+        # Group plans by date
+        days_grouped = {}
+        trip_start_date = req.start_at.date() if req.start_at else None
+        
+        for plan in daily_plans:
+            plan_date = plan.start_at.date()
+            if plan_date not in days_grouped:
+                days_grouped[plan_date] = []
+            
+            # Add transfer info if exists for this plan
+            transfer = transfers.get(plan.id)
+            plan_data = {
+                'plan': plan,
+                'transfer': transfer,
+                'activity_type_fa': _get_activity_type_fa(plan.activity_type),
+            }
+            days_grouped[plan_date].append(plan_data)
+        
+        # Convert to ordered list of days
+        sorted_dates = sorted(days_grouped.keys())
+        days_list = []
+        for i, d in enumerate(sorted_dates):
+            day_num = (d - trip_start_date).days + 1 if trip_start_date else i + 1
+            days_list.append({
+                'day_number': day_num,
+                'date': d,
+                'activities': days_grouped[d],
+            })
+        
         return render(
             request,
             "team10/trip_detail.html",
             {
                 "trip": trip,
-                "days": days,
+                "days_count": days_count,
                 "total_cost": trip.calculate_total_cost(),
-                "daily_plans": trip.daily_plans.all(),
+                "days_list": days_list,
                 "hotel_schedules": trip.hotel_schedules.all(),
             },
         )
@@ -339,8 +378,24 @@ def trip_detail(request, trip_id: int):
         return render(
             request,
             "team10/trip_detail.html",
-            {"trip": None, "trip_id": trip_id, "days": 0, "total_cost": 0, "daily_plans": [], "hotel_schedules": []},
+            {"trip": None, "trip_id": trip_id, "days_count": 0, "total_cost": 0, "days_list": [], "hotel_schedules": []},
         )
+
+
+def _get_activity_type_fa(activity_type: str) -> str:
+    """Convert English activity type to Persian."""
+    types = {
+        'SIGHTSEEING': 'گردشگری',
+        'FOOD': 'غذا',
+        'SHOPPING': 'خرید',
+        'OUTDOOR': 'فضای باز',
+        'CULTURE': 'فرهنگی',
+        'RELAX': 'استراحت',
+        'NIGHTLIFE': 'شب‌گردی',
+        'TRANSPORT': 'حمل‌ونقل',
+        'OTHER': 'سایر',
+    }
+    return types.get(activity_type, 'سایر')
 
 
 def trip_cost(request, trip_id: int):
@@ -354,9 +409,29 @@ def trip_cost(request, trip_id: int):
         # Calculate cost breakdown by category
         hotel_cost = sum(float(s.cost) for s in trip.hotel_schedules.all())
         
+        # Get transfer costs from TransferPlan
+        transfer_cost = 0
+        transfer_details = []
+        try:
+            for transfer in trip.transfer_plans.all():
+                cost = float(transfer.cost)
+                transfer_cost += cost
+                mode_display = {
+                    'WALKING': 'پیاده‌روی',
+                    'TAXI': 'تاکسی',
+                    'PUBLIC_TRANSIT': 'حمل‌ونقل عمومی',
+                    'DRIVING': 'خودرو شخصی',
+                }.get(transfer.transport_mode, transfer.transport_mode)
+                transfer_details.append({
+                    'description': f'{mode_display} - {transfer.distance_km} کیلومتر ({transfer.duration_minutes} دقیقه)',
+                    'cost': cost,
+                })
+        except Exception:
+            pass  # TransferPlan table might not exist yet
+        
         # Group daily plan costs by activity type
         food_cost = 0
-        transport_cost = 0
+        activity_transport_cost = 0  # Transport activity type costs (different from transfers)
         sightseeing_cost = 0
         other_cost = 0
         
@@ -376,13 +451,16 @@ def trip_cost(request, trip_id: int):
             if activity_type == 'FOOD':
                 food_cost += cost
             elif activity_type == 'TRANSPORT':
-                transport_cost += cost
+                activity_transport_cost += cost
             elif activity_type in ('SIGHTSEEING', 'CULTURE'):
                 sightseeing_cost += cost
             else:
                 other_cost += cost
         
-        total_cost = hotel_cost + food_cost + transport_cost + sightseeing_cost + other_cost
+        # Combine transfer costs with activity transport costs
+        total_transport_cost = transfer_cost + activity_transport_cost
+        
+        total_cost = hotel_cost + food_cost + total_transport_cost + sightseeing_cost + other_cost
         
         # Calculate percentages
         def calc_percent(value):
@@ -390,7 +468,7 @@ def trip_cost(request, trip_id: int):
         
         cost_breakdown = [
             {'name': 'اقامت', 'cost': hotel_cost, 'percent': calc_percent(hotel_cost), 'type': 'hotel'},
-            {'name': 'حمل‌ونقل', 'cost': transport_cost, 'percent': calc_percent(transport_cost), 'type': 'transport'},
+            {'name': 'حمل‌ونقل', 'cost': total_transport_cost, 'percent': calc_percent(total_transport_cost), 'type': 'transport'},
             {'name': 'خوراک', 'cost': food_cost, 'percent': calc_percent(food_cost), 'type': 'food'},
             {'name': 'بازدید و فرهنگی', 'cost': sightseeing_cost, 'percent': calc_percent(sightseeing_cost), 'type': 'sightseeing'},
             {'name': 'تفریحی/سایر', 'cost': other_cost, 'percent': calc_percent(other_cost), 'type': 'other'},
@@ -402,7 +480,8 @@ def trip_cost(request, trip_id: int):
             for s in trip.hotel_schedules.all()
         ]
         
-        transport_details = daily_plans_by_type.get('TRANSPORT', [])
+        # Combine transfer details with activity transport details
+        transport_details = transfer_details + daily_plans_by_type.get('TRANSPORT', [])
         food_details = daily_plans_by_type.get('FOOD', [])
         sightseeing_details = daily_plans_by_type.get('SIGHTSEEING', []) + daily_plans_by_type.get('CULTURE', [])
         other_details = []

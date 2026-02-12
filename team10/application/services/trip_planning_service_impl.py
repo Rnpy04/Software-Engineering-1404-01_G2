@@ -161,7 +161,7 @@ class TripPlanningServiceImpl(TripPlanningService):
             preferences: List of preference tags
             recommended_places: List of recommended places from recommendation service
         """
-        from ...models import DailyPlan, HotelSchedule
+        from ...models import DailyPlan, HotelSchedule, TransferPlan
 
         # 1. Select a hotel based on budget level
         hotel = self._select_hotel(region_id, budget_level)
@@ -241,7 +241,7 @@ class TripPlanningServiceImpl(TripPlanningService):
                 )
                 lunch_start = current_date.replace(hour=12, minute=30)
                 
-                DailyPlan.objects.create(
+                lunch_plan = DailyPlan.objects.create(
                     trip=trip,
                     facility_id=lunch_restaurant.id,
                     start_at=lunch_start,
@@ -251,6 +251,21 @@ class TripPlanningServiceImpl(TripPlanningService):
                     place_source_type='FACILITIES',
                     cost=lunch_restaurant.cost
                 )
+                
+                # Save transfer info
+                if travel_info and current_facility.id != lunch_restaurant.id:
+                    TransferPlan.objects.create(
+                        trip=trip,
+                        to_daily_plan=lunch_plan,
+                        from_facility_id=current_facility.id,
+                        to_facility_id=lunch_restaurant.id,
+                        distance_km=travel_info.distance_km,
+                        duration_minutes=travel_info.duration_minutes,
+                        transport_mode=travel_info.transport_mode.value,
+                        cost=travel_info.estimated_cost,
+                        transfer_time=lunch_start
+                    )
+                
                 current_facility = lunch_restaurant
             else:
                 # Fallback: eat at hotel
@@ -288,16 +303,37 @@ class TripPlanningServiceImpl(TripPlanningService):
                 restaurants, current_facility, budget_level
             )
             if dinner_restaurant and dinner_restaurant.id != (lunch_restaurant.id if lunch_restaurant else None):
-                DailyPlan.objects.create(
+                # Calculate travel time to restaurant
+                travel_info = self._facilities_service.get_travel_info(
+                    current_facility.id, dinner_restaurant.id
+                )
+                dinner_start = current_date.replace(hour=19, minute=0)
+                
+                dinner_plan = DailyPlan.objects.create(
                     trip=trip,
                     facility_id=dinner_restaurant.id,
-                    start_at=current_date.replace(hour=19, minute=0),
+                    start_at=dinner_start,
                     end_at=current_date.replace(hour=20, minute=30),
                     activity_type='FOOD',
                     description=f"شام در {dinner_restaurant.name}",
                     place_source_type='FACILITIES',
                     cost=dinner_restaurant.cost
                 )
+                
+                # Save transfer info
+                if travel_info and current_facility.id != dinner_restaurant.id:
+                    TransferPlan.objects.create(
+                        trip=trip,
+                        to_daily_plan=dinner_plan,
+                        from_facility_id=current_facility.id,
+                        to_facility_id=dinner_restaurant.id,
+                        distance_km=travel_info.distance_km,
+                        duration_minutes=travel_info.duration_minutes,
+                        transport_mode=travel_info.transport_mode.value,
+                        cost=travel_info.estimated_cost,
+                        transfer_time=dinner_start
+                    )
+                
                 current_facility = dinner_restaurant
             else:
                 # Fallback: eat at hotel
@@ -440,7 +476,7 @@ class TripPlanningServiceImpl(TripPlanningService):
         Returns:
             Tuple of (selected facility or None, new attraction index, updated visited set)
         """
-        from ...models import DailyPlan
+        from ...models import DailyPlan, TransferPlan
 
         # Find next unvisited attraction that's open during this slot
         selected_attraction = None
@@ -501,7 +537,7 @@ class TripPlanningServiceImpl(TripPlanningService):
         activity_type = self._determine_activity_type(selected_attraction.tags, preferences)
 
         # Create the daily plan entry
-        DailyPlan.objects.create(
+        activity_plan = DailyPlan.objects.create(
             trip=trip,
             facility_id=selected_attraction.id,
             start_at=actual_start,
@@ -511,6 +547,20 @@ class TripPlanningServiceImpl(TripPlanningService):
             place_source_type='RECOMMENDATION',
             cost=selected_attraction.cost
         )
+        
+        # Save transfer info
+        if travel_info and current_facility.id != selected_attraction.id:
+            TransferPlan.objects.create(
+                trip=trip,
+                to_daily_plan=activity_plan,
+                from_facility_id=current_facility.id,
+                to_facility_id=selected_attraction.id,
+                distance_km=travel_info.distance_km,
+                duration_minutes=travel_info.duration_minutes,
+                transport_mode=travel_info.transport_mode.value,
+                cost=travel_info.estimated_cost,
+                transfer_time=current_date.replace(hour=start_hour, minute=0)
+            )
 
         # Mark as visited
         visited_place_ids.add(selected_attraction.id)

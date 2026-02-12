@@ -73,7 +73,8 @@ class Trip(models.Model):
         """Calculate total cost of the trip."""
         daily_cost = sum(plan.cost for plan in self.daily_plans.all())
         hotel_cost = sum(schedule.cost for schedule in self.hotel_schedules.all())
-        return daily_cost + hotel_cost
+        transfer_cost = sum(transfer.cost for transfer in self.transfer_plans.all())
+        return daily_cost + hotel_cost + transfer_cost
 
 
 class DailyPlan(models.Model):
@@ -132,3 +133,42 @@ class HotelSchedule(models.Model):
 
     def __str__(self):
         return f"Hotel {self.hotel_id} - {self.start_at.date()} to {self.end_at.date()}"
+
+
+class TransferPlan(models.Model):
+    """Database model for transfers between activities."""
+
+    TRANSPORT_MODE_CHOICES = [
+        ('WALKING', 'پیاده‌روی'),
+        ('DRIVING', 'خودرو شخصی'),
+        ('PUBLIC_TRANSIT', 'حمل‌ونقل عمومی'),
+        ('TAXI', 'تاکسی'),
+    ]
+
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='transfer_plans')
+    from_daily_plan = models.ForeignKey(DailyPlan, on_delete=models.CASCADE, related_name='transfers_from', null=True, blank=True)
+    to_daily_plan = models.ForeignKey(DailyPlan, on_delete=models.CASCADE, related_name='transfers_to', null=True, blank=True)
+    from_facility_id = models.IntegerField()
+    to_facility_id = models.IntegerField()
+    distance_km = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    duration_minutes = models.IntegerField(default=0)
+    transport_mode = models.CharField(max_length=20, choices=TRANSPORT_MODE_CHOICES, default='WALKING')
+    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    transfer_time = models.DateTimeField()  # When this transfer happens
+
+    class Meta:
+        db_table = 'transfer_plans'
+        ordering = ['transfer_time']
+
+    def __str__(self):
+        return f"Transfer: {self.transport_mode} - {self.distance_km}km"
+    
+    def get_transport_mode_display_fa(self):
+        """Get Persian display for transport mode."""
+        mode_display = {
+            'WALKING': 'پیاده‌روی',
+            'DRIVING': 'خودرو شخصی',
+            'PUBLIC_TRANSIT': 'حمل‌ونقل عمومی',
+            'TAXI': 'تاکسی',
+        }
+        return mode_display.get(self.transport_mode, self.transport_mode)

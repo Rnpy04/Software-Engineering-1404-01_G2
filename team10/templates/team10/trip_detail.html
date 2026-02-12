@@ -17,7 +17,7 @@
                 </div>
                 <div class="info-item">
                     <span class="label">مدت</span>
-                    <span class="value">{{ days }} روز</span>
+                    <span class="value">{{ days_count }} روز</span>
                 </div>
                 <div class="info-item">
                     <span class="label">تاریخ شروع</span>
@@ -37,7 +37,7 @@
                 </div>
                 <div class="info-item">
                     <span class="label">هزینه کل</span>
-                    <span class="value">{{ total_cost|default:"—" }}</span>
+                    <span class="value">{{ total_cost|floatformat:0|default:"—" }} تومان</span>
                 </div>
             </div>
         </div>
@@ -45,29 +45,48 @@
   <section class="t10-card">
     <h3>برنامه روزانه</h3>
 
-    {% for plan in daily_plans %}
-    <div class="t10-day-block">
-      <h4>روز {{ forloop.counter }}</h4>
-      <div class="t10-item-row">
-        <div><strong>نام:</strong> {{ plan.description|truncatechars:40|default:"-" }}</div>
-        <div><strong>نوع:</strong>
-          {% if plan.activity_type == "SIGHTSEEING" %}گردشگری
-          {% elif plan.activity_type == "FOOD" %}غذا
-          {% elif plan.activity_type == "SHOPPING" %}خرید
-          {% elif plan.activity_type == "OUTDOOR" %}فضای باز
-          {% elif plan.activity_type == "CULTURE" %}فرهنگی
-          {% elif plan.activity_type == "RELAX" %}استراحت
-          {% elif plan.activity_type == "NIGHTLIFE" %}شب‌گردی
-          {% elif plan.activity_type == "TRANSPORT" %}حمل‌ونقل
-          {% else %}سایر
+    {% for day in days_list %}
+    <div class="t10-day-block" style="margin-bottom: 2rem; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem;">
+      <h4 style="background: #f5f5f5; padding: 0.5rem 1rem; margin: -1rem -1rem 1rem -1rem; border-radius: 8px 8px 0 0;">
+        روز {{ day.day_number }} - {{ day.date|date:"Y-m-d" }}
+      </h4>
+      
+      {% for item in day.activities %}
+      
+      {% if item.transfer %}
+      <div class="t10-transfer-info" style="background: #e8f4fd; padding: 0.5rem 1rem; margin: 0.5rem 0; border-radius: 4px; border-right: 3px solid #2196f3;">
+        <span style="color: #1976d2;">
+          <strong>🚗 انتقال:</strong>
+          {% if item.transfer.transport_mode == "WALKING" %}
+            پیاده‌روی
+          {% elif item.transfer.transport_mode == "TAXI" %}
+            تاکسی
+          {% elif item.transfer.transport_mode == "PUBLIC_TRANSIT" %}
+            حمل‌ونقل عمومی
+          {% elif item.transfer.transport_mode == "DRIVING" %}
+            خودرو شخصی
+          {% else %}
+            {{ item.transfer.transport_mode }}
           {% endif %}
+          | {{ item.transfer.distance_km }} کیلومتر
+          | {{ item.transfer.duration_minutes }} دقیقه
+          {% if item.transfer.cost > 0 %}
+          | هزینه: {{ item.transfer.cost|floatformat:0 }} تومان
+          {% endif %}
+        </span>
+      </div>
+      {% endif %}
+      
+      <div class="t10-item-row" style="padding: 0.75rem; background: #fafafa; border-radius: 4px; margin-bottom: 0.5rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div><strong>فعالیت:</strong> {{ item.plan.description|truncatechars:50|default:"-" }}</div>
+          <div><strong>نوع:</strong> {{ item.activity_type_fa }}</div>
+          <div><strong>ساعت:</strong> {{ item.plan.start_at|date:"H:i" }} تا {{ item.plan.end_at|date:"H:i" }}</div>
+          <div><strong>هزینه:</strong> {{ item.plan.cost|floatformat:0|default:"0" }} تومان</div>
         </div>
-        <div><strong>ساعت پیشنهادی:</strong> {{ plan.start_at|date:"H:i"|default:"-" }}</div>
-        <div><strong>توضیح کوتاه:</strong> {{ plan.description|default:"-" }}</div>
       </div>
-      <div class="t10-transfer">
-        بازه زمانی: {{ plan.start_at|date:"Y-m-d H:i"|default:"-" }} تا {{ plan.end_at|date:"Y-m-d H:i"|default:"-" }}
-      </div>
+      
+      {% endfor %}
     </div>
     {% empty %}
     <div class="t10-day-block">
@@ -85,10 +104,10 @@
       <div class="t10-item-row">
         <div><strong>شناسه هتل:</strong> {{ hotel.hotel_id }}</div>
         <div><strong>تعداد اتاق:</strong> {{ hotel.rooms_count }}</div>
-        <div><strong>هزینه:</strong> {{ hotel.cost }}</div>
+        <div><strong>هزینه:</strong> {{ hotel.cost|floatformat:0 }} تومان</div>
       </div>
       <div class="t10-transfer">
-        بازه اقامت: {{ hotel.start_at|date:"Y-m-d H:i"|default:"-" }} تا {{ hotel.end_at|date:"Y-m-d H:i"|default:"-" }}
+        بازه اقامت: {{ hotel.start_at|date:"Y-m-d"|default:"-" }} تا {{ hotel.end_at|date:"Y-m-d"|default:"-" }}
       </div>
     </div>
     {% empty %}
@@ -101,9 +120,9 @@
   </section>
 
   <div class="t10-actions">
-    <a class="t10-btn t10-btn--secondary" href="/team10/trips/{{ trip.id }}/cost/">هزینه سفر</a>
-    <a class="t10-btn t10-btn--secondary" href="/team10/trips/{{ trip.id }}/styles/">سبک‌ها</a>
-    <a class="t10-btn t10-btn--primary" href="/team10/trips/{{ trip.id }}/replan/">بازتولید برنامه</a>
+    <a class="t10-btn t10-btn--secondary" href="{% url 'team10:trip_cost' trip.id %}">هزینه سفر</a>
+    <a class="t10-btn t10-btn--secondary" href="{% url 'team10:trip_styles' trip.id %}">سبک‌ها</a>
+    <a class="t10-btn t10-btn--primary" href="{% url 'team10:trip_replan' trip.id %}">بازتولید برنامه</a>
   </div>
   {% else %}
   <section class="t10-card">
