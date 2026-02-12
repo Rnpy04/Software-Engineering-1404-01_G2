@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from datetime import date
 
 from ...domain.entities.trip import Trip
@@ -27,7 +27,7 @@ class TripPlanningService(ABC):
         pass
 
     @abstractmethod
-    def view_trip(self, trip_id: int, user_id: int) -> Trip:
+    def view_trip(self, trip_id: int, user_id: int) -> Tuple[Trip, str]:
         """View trip details."""
         pass
 

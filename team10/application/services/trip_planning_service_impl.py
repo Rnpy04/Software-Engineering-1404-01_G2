@@ -15,6 +15,7 @@ from ...infrastructure.ports.facilities_service_port import FacilitiesServicePor
 from ...infrastructure.ports.recommendation_service_port import RecommendationServicePort
 from ...infrastructure.models.recommended_place import RecommendedPlace
 from .trip_planning_service import TripPlanningService
+from ...services import wiki_service
 
 
 @dataclass
@@ -804,10 +805,11 @@ class TripPlanningServiceImpl(TripPlanningService):
 
         return trip
 
-    def view_trip(self, trip_id: int, user_id: str) -> TripModel:
-        """View trip details."""
+    def view_trip(self, trip_id: int, user_id: str) ->  Tuple[Trip, str]:
+        """View trip details and destination_description"""
         trip = TripModel.objects.get(id=trip_id, user_id=user_id)
-        return trip
+        destination_description = wiki_service.get_destination_basic_info(trip.destination_name)
+        return trip, destination_description
 
     def analyze_costs_and_budget(self, trip_id: int, budget_limit: float) -> CostAnalysisResult:
         """Analyze trip costs against a budget."""

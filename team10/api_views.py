@@ -91,12 +91,7 @@ def get_trip_api(request, trip_id):
     try:
         # Only allow users to view their own trips
         user_id = str(request.user.id) if hasattr(request.user, 'id') else None
-        trip = Trip.objects.get(id=trip_id, user_id=user_id)
-
-        # TODO: Implement wiki service integration
-        # wiki = get_wiki_client(use_mock=True)
-        # dest_info = wiki.get_destination_basic_info(trip.requirements.destination_name)
-        dest_info = "ببببو"
+        trip, dest_info = trip_planning_service.view_trip(trip_id, user_id)
         
         # Prepare response data
         trip_data = {
@@ -124,8 +119,7 @@ def get_trip_api(request, trip_id):
                 {'tag': c.tag, 'description': c.description}
                 for c in trip.requirements.constraints.all()
             ],
-            # TODO: Populate from wiki service when implemented
-            'destination_info': '',  # Will be ~250 words description from wiki service
+            'destination_info': dest_info,
         }
 
         return JsonResponse(trip_data)
