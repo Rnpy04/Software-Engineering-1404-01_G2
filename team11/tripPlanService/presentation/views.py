@@ -3,6 +3,7 @@
 # =======================================================================================
 from _decimal import Decimal
 
+from django.contrib.auth.models import User
 from django.http import JsonResponse, FileResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
@@ -280,11 +281,22 @@ class TripViewSet(viewsets.ViewSet):
         if travel_style not in valid_styles:
             travel_style = 'SOLO'
 
+        user_instance=None
+        if user_id:
+            try:
+                user_instance = User.objects.get(pk=user_id)
+            except User.DoesNotExist:
+                return Response(
+                    {"error": f"User with id {user_id} does not exist."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
         try:
             # 5. تولید سفر با TripGenerator
             generator = TripGenerator()
 
             trip = generator.generate(
+                user=user_instance,
                 province=province,
                 city=city,
                 interests=interests,

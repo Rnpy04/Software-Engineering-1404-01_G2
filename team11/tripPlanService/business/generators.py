@@ -7,6 +7,7 @@ from decimal import Decimal
 
 # Django imports
 from data.models import Trip, TripDay, TripItem
+from django.contrib.auth.models import User
 
 # Local imports
 from .helpers import DestinationSuggester
@@ -24,6 +25,7 @@ class TripGenerator:
 
     def generate(
             self,
+            user:User,
             province: str,
             city: Optional[str],
             interests: List[str],
@@ -80,7 +82,8 @@ class TripGenerator:
             daily_available_hours=daily_available_hours,
             travel_style=travel_style,
             generation_strategy='MIXED',
-            status='DRAFT'
+            status='DRAFT',
+            user=user,
         )
 
         # 4. Generate days
