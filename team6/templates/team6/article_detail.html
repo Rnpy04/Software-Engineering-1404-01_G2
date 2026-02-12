@@ -232,6 +232,7 @@
         if (!bodyContainer || !refsContent) return;
 
         const fullHTML = bodyContainer.innerHTML;
+        // جدا کردن بخش «منابع» از انتهای متن مقاله و نمایش آن در باکس جداگانه (بر اساس آخرین رخداد کلمه "منابع").
         const keywords = ["منابع"];
         let lastIndex = -1;
 
