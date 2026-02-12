@@ -204,6 +204,14 @@
   {% endif %}
 </section>
 
+<!-- Timeline -->
+<div class="t10-timeline-floating" aria-label="خط زمان سفر">
+  <div class="t10-timeline-line">
+    <div class="t10-timeline-progress"></div>
+  </div>
+  <ol class="t10-timeline-dots" id="t10TimelineDots"></ol>
+</div>
+
 <script>
   (function() {
     function toPersianDigits(value) {
@@ -266,9 +274,73 @@
       });
     }
 
+    function initFloatingTimeline() {
+      const itineraryCard = Array.from(document.querySelectorAll('.t10-card')).find(function(card) {
+      const h3 = card.querySelector('h3');
+      return h3 && (h3.textContent || '').trim().includes('برنامه روزانه');
+    });
+
+    const days = itineraryCard
+      ? itineraryCard.querySelectorAll('.t10-day-card:not(.t10-hotel-card)')
+      : document.querySelectorAll('.t10-day-card:not(.t10-hotel-card)');
+
+      const dotsWrap = document.getElementById('t10TimelineDots');
+      const progressEl = document.querySelector('.t10-timeline-progress');
+
+      if (!days.length || !dotsWrap || !progressEl) return;
+
+      // create dots from existing days
+      days.forEach((day, i) => {
+        const dayNum = (day.querySelector('.t10-day-header h4')?.textContent || '').replace(/\D/g, '') || (i + 1);
+
+        day.id = day.id || `t10-day-${i + 1}`;
+
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `#${day.id}`;
+        a.className = 't10-timeline-dot';
+        a.textContent = dayNum;
+
+        li.appendChild(a);
+        dotsWrap.appendChild(li);
+      });
+
+      function updateTimeline() {
+        const first = days[0].getBoundingClientRect();
+        const last = days[days.length - 1].getBoundingClientRect();
+        const vh = window.innerHeight || 1;
+
+        const total = (last.top - first.top) || 1;
+        const passed = vh * 0.4 - first.top;
+        const p = Math.max(0, Math.min(1, passed / total));
+
+        progressEl.style.height = (p * 100) + '%';
+
+        const dots = document.querySelectorAll('.t10-timeline-dot');
+        const n = dots.length;
+
+        // active index based on progress, so it matches the progress line
+        let activeIndex = 0;
+        if (n > 1) {
+          activeIndex = Math.min(n - 1, Math.floor(p * (n - 1) + 1e-6));
+        }
+
+        // mark active (and optionally passed)
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('is-active', i === activeIndex);
+          dot.classList.toggle('is-passed', i < activeIndex);
+        });
+      }
+
+      window.addEventListener('scroll', updateTimeline, { passive: true });
+      window.addEventListener('resize', updateTimeline);
+      updateTimeline();
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       setActivityEmojis();
       convertAllDigits();
+      initFloatingTimeline();
     });
   })();
 </script>

@@ -394,3 +394,119 @@
   color: #475569;
   font-style: italic;
 }
+
+/* ========== Floating Timeline ========== */
+.t10-timeline-floating {
+  position: fixed;
+  top: 110px;
+  right: 16px;
+  width: 64px;
+  height: calc(100vh - 140px);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(46, 125, 50, 0.10);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(6px);
+  z-index: 20;
+  pointer-events: auto;
+}
+
+.t10-timeline-line {
+  position: absolute;
+  inset: 14px 0 14px 0;
+  margin: 0 auto;
+  width: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  overflow: hidden;
+}
+
+.t10-timeline-progress {
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(to bottom, #60a5fa, #2563eb);
+  border-radius: 999px;
+  transition: height 0.08s linear;
+}
+
+.t10-timeline-dots {
+  list-style: none;
+  margin: 0;
+  padding: 14px 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.t10-timeline-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 2px solid rgba(148, 163, 184, 0.55);
+  color: #334155;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+  transition: all 0.15s ease;
+}
+
+.t10-timeline-dot.is-active {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: #2563eb;
+  color: #1d4ed8;
+}
+
+@media (max-width: 900px) {
+  .t10-timeline-floating {
+    display: none;
+  }
+}
+
+.t10-timeline-floating {
+  --t10-timeline-bg: rgba(255, 255, 255, 0.7);
+}
+
+.t10-timeline-dots li {
+  position: relative;
+}
+
+.t10-timeline-dots li::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;           
+  height: 52px;         
+  background: #fff;
+  border-radius: 999px;
+  z-index: 1;            
+}
+
+.t10-timeline-dot {
+  position: relative;
+  z-index: 2;
+  background: #fff;
+}
+
+.t10-timeline-line { 
+  z-index: 0;
+}
+.t10-timeline-dots {
+  z-index: 2;
+}
+
+.t10-timeline-dot.is-passed {
+  border-color: rgba(37, 99, 235, 0.45);
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.06);
+}
