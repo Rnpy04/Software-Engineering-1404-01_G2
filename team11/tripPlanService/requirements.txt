@@ -17,3 +17,5 @@ python-decouple~=3.8
 numpy~=1.26.0
 pandas~=2.2.0
 scikit-learn~=1.5.0
+
+reportlab~=4.0.0
