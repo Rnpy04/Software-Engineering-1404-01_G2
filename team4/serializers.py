@@ -74,10 +74,6 @@ class ImageSerializer(serializers.ModelSerializer):
         ]
 
 
-class SimpleAmenitySerializer(serializers.Serializer):
-    """Simplified amenity serializer showing just names"""
-    name_fa = serializers.CharField()
-    name_en = serializers.CharField()
 
 
 class FacilityListSerializer(serializers.ModelSerializer):
@@ -402,3 +398,25 @@ class FacilityFilterSerializer(serializers.Serializer):
     price_tier = serializers.CharField(required=False, allow_blank=True)
 
 
+class RoutingRequestSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=['car', 'motorcycle'], default='car')
+    origin = serializers.CharField()
+    destination = serializers.CharField()
+    # waypoints = serializers.CharField(required=False, allow_blank=True)
+    avoidTrafficZone = serializers.BooleanField(default=False)
+    avoidOddEvenZone = serializers.BooleanField(default=False)
+    alternative = serializers.BooleanField(default=False)
+
+    def validate_point(self, value):
+        try:
+            # Expected input: "lat,lng"
+            coords = value.split(',')
+            return Point(longitude=coords[1], latitude=coords[0])
+        except Exception:
+            raise serializers.ValidationError("فرمت مختصات نامعتبر است. لطفا از فرمت 'lat,lng' استفاده کنید.")
+
+    def validate_origin(self, value):
+        return self.validate_point(value)
+
+    def validate_destination(self, value):
+        return self.validate_point(value)
