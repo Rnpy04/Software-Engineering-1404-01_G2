@@ -1,0 +1,155 @@
+<!-- File: team9/templates/team9/map.html -->
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Service Map - Team 9</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        /* Right-align popup content for Persian text */
+        .leaflet-popup-content { text-align: right; direction: rtl; }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // 1. Initialize map centered on Isfahan (from your sample data)
+        var map = L.map('map').setView([32.6546, 51.6680], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Array to store current markers (so we can clear them on update)
+        var currentMarkers = [];
+
+        function fetchFacilities() {
+            var center = map.getCenter();
+            var bounds = map.getBounds();
+            var corner = bounds.getNorthEast();
+            
+            // Calculate view radius in meters
+            var radius = Math.floor(map.distance(center, corner));
+
+            // Construct API URL (using Team 4 endpoint as per your text)
+            var apiUrl = `/team4/api/facilities/nearby/?lat=${center.lat}&lng=${center.lng}&radius=${radius}`;
+
+            console.log("Fetching facilities from:", apiUrl); // Debug log
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    return response.json();
+                })
+                .then(data => {
+                    // 1. Clear old markers from the map
+                    currentMarkers.forEach(marker => map.removeLayer(marker));
+                    currentMarkers = [];
+
+                    // 2. Extract places list (JSON structure: { count, next, results: [...] })
+                    var places = data.results || [];
+
+                    places.forEach(place => {
+                        // Validate coordinates existence
+                        if (place.coordinates && place.coordinates.length === 2) {
+                            // JSON format: [longitude, latitude] -> Leaflet needs: [lat, lng]
+                            var lng = place.coordinates[0];
+                            var lat = place.coordinates[1];
+                            
+                            // Create popup content with Persian name and category
+                            var popupContent = `
+                                <b>${place.name_fa}</b><br>
+                                <span style="color:gray; font-size:0.9em;">${place.category}</span><br>
+                                <span style="font-size:0.8em;">${place.city || ''}</span>
+                            `;
+
+                            var marker = L.marker([lat, lng])
+                                .addTo(map)
+                                .bindPopup(popupContent);
+                            
+                            currentMarkers.push(marker);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching facilities:", error);
+                });
+        }
+
+        // Fetch data whenever the map is moved or zoomed
+        map.on('moveend', fetchFacilities);
+
+        // Initial fetch on page load
+        fetchFacilities();
+    </script>
+</body>
+</html>
+<!-- File: team9/templates/team9/map.html -->
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Service Map - Team 9</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* Full screen map style */
+        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
+        #map { height: 100vh; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <!-- Map container -->
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // 1. Initialize map centered on Tehran
+        var map = L.map('map').setView([35.7219, 51.3347], 12);
+
+        // 2. Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // 3. Fetch data from the Mock API
+        // This simulates getting data from the Facilities service (Team 5)
+        const apiUrl = '/team9/api/mock-facilities/'; 
+
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Loop through the data and add markers
+                data.forEach(place => {
+                    if (place.lat && place.lng) {
+                        L.marker([place.lat, place.lng])
+                            .addTo(map)
+                            .bindPopup(`<b>${place.name}</b><br>Type: ${place.type}`);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching facilities:', error);
+                alert('Failed to load map data.');
+            });
+    </script>
+
+</body>
+</html>
+
