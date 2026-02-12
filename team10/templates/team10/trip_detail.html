@@ -59,7 +59,7 @@
                         {% with b_lower=b|lower %}
                           {% if b_lower == "economy" or b_lower == "economic" or b_lower == "economical" %}
                             اقتصادی
-                          {% elif b_lower == "medium" or b_lower == "normal" or b_lower == "standard" %}
+                          {% elif b_lower == "medium" or b_lower == "normal" or b_lower == "standard" or b_lower == "moderate" %}
                             متوسط
                           {% elif b_lower == "luxury" or b_lower == "lux" %}
                             لوکس
@@ -73,6 +73,11 @@
                 <div class="t10-info-item">
                     <span class="t10-info-label">هزینه کل</span>
                     <span class="t10-info-value">{{ total_cost|floatformat:0|default:"—" }} تومان</span>
+                </div>
+                <div class="t10-trip-actions">
+                  <a class="t10-btn t10-btn--secondary" href="{% url 'team10:trip_cost' trip.id %}">هزینه سفر</a>
+                  <a class="t10-btn t10-btn--secondary" href="{% url 'team10:trip_styles' trip.id %}">سبک‌ها</a>
+                  <a class="t10-btn t10-btn--primary" href="{% url 'team10:trip_replan' trip.id %}">بازتولید برنامه</a>
                 </div>
             </div>
         </div>
@@ -170,11 +175,6 @@
     {% endfor %}
   </section>
 
-  <div class="t10-sticky-actions">
-    <a class="t10-btn t10-btn--secondary" href="{% url 'team10:trip_cost' trip.id %}">هزینه سفر</a>
-    <a class="t10-btn t10-btn--secondary" href="{% url 'team10:trip_styles' trip.id %}">سبک‌ها</a>
-    <a class="t10-btn t10-btn--primary" href="{% url 'team10:trip_replan' trip.id %}">بازتولید برنامه</a>
-  </div>
   {% else %}
   <section class="t10-card">
     <h3>جزئیات سفر</h3>
