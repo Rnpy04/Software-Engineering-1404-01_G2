@@ -12,9 +12,8 @@ class DestinationSuggester:
     """
 
     def __init__(self):
-        def __init__(self):
-            self.facility_client = FacilityClient()
-            self.recom_client = RecommendationClient()
+        self.facility_client = FacilityClient()
+        self.recom_client = RecommendationClient()
 
     def get_destinations(
             self,
