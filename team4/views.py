@@ -1095,6 +1095,16 @@ class RoutingView(APIView):
     @extend_schema(
         summary="Calculate route and navigation",
         description="Send origin and destination coordinates to receive route details, distance, and ETA.",
+        # Individual input boxes for the UI
+        parameters=[
+            OpenApiParameter(name='type', description='Vehicle type', required=True, type=str, enum=['car', 'motorcycle']),
+            OpenApiParameter(name='origin', description='lat,lng (e.g. 35.72,51.43)', required=True, type=str),
+            OpenApiParameter(name='destination', description='lat,lng (e.g. 35.67,51.29)', required=True, type=str),
+            OpenApiParameter(name='avoidTrafficZone', type=bool, default=False),
+            OpenApiParameter(name='avoidOddEvenZone', type=bool, default=False),
+            OpenApiParameter(name='alternative', type=bool, default=False),
+        ],
+        # The JSON body (matches your serializer)
         request=RoutingRequestSerializer,
         responses={
             200: OpenApiResponse(description="Route data retrieved successfully"),
@@ -1104,26 +1114,20 @@ class RoutingView(APIView):
         tags=['Navigation']
     )
     def post(self, request):
+        # Your logic remains exactly the same
         serializer = RoutingRequestSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Extract Point objects from validated data
         origin_point = serializer.validated_data['origin']
         dest_point = serializer.validated_data['destination']
         
-        # Format coordinates for the external service (Latitude,Longitude)
         origin_str = f"{origin_point.latitude},{origin_point.longitude}"
         dest_str = f"{dest_point.latitude},{dest_point.longitude}"
         
-        # Configuration
         service_url = "https://api.neshan.org/v4/direction"
         api_key = os.getenv('MAP_SERVICE_KEY')
-        headers = {
-            'Api-Key': api_key
-        }
         
-        # Prepare Query Parameters (Waypoints removed)
         params = {
             'type': serializer.validated_data['type'],
             'origin': origin_str,
@@ -1134,15 +1138,13 @@ class RoutingView(APIView):
         }
 
         try:
-            response = requests.get(service_url, headers=headers, params=params, timeout=10)
+            response = requests.get(service_url, headers={'Api-Key': api_key}, params=params, timeout=10)
             result = response.json()
 
-            # If the service returns a 200, we add our internal distance calculation
             if response.status_code == 200:
                 result['internal_air_distance_km'] = round(origin_point.distance(dest_point), 3)
                 return Response(result, status=status.HTTP_200_OK)
             
-            # Return the error from the map service with our Farsi detail
             return Response(
                 {
                     "detail": "خطا در دریافت اطلاعات از سرویس نقشه. لطفا ورودی‌ها را بررسی کنید.",
