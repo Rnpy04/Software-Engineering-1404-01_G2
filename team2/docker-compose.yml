@@ -25,21 +25,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  #   depends_on:
-  #     - frontend
-  #     - backend
+    depends_on:
+      - team2-frontend
 
-  # frontend:
-  #   image: traefik/whoami
-  #   command: ["-port=5173"]
-  #   networks:
-  #     - app404
-
-  # backend:
-  #   image: traefik/whoami
-  #   command: ["-port=3000"]
-  #   networks:
-  #     - app404
+  team2-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    networks:
+      - app404
 
 networks:
   app404:

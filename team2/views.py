@@ -1,5 +1,6 @@
+from django.conf import settings
 from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -27,7 +28,7 @@ def ping(request):
 
 
 def base(request):
-    return render(request, f"{TEAM_NAME}/index.html")
+    return redirect(settings.TEAM2_FRONT_URL)
 
 
 @api_view(['POST'])
