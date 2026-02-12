@@ -263,6 +263,7 @@ class ArticleCreateView(CreateView):
             except Exception:
                 article.summary = summary_en  # اگر ترجمه خراب شد، همان انگلیسی ذخیره شود
             
+            # خلاصه را زودتر ذخیره می‌کنیم تا در صورت خطا در مراحل تگ‌گذاری، نتیجه خلاصه از دست نرود.
             article.save(update_fields=['summary'])
 
             # تگ‌های کاربر
@@ -467,6 +468,7 @@ def article_detail(request, slug):
         
         # افزایش بازدید
         #  چک کردن اینکه آیا این مقاله خاص قبلاً توسط این یوزر دیده شده یا نه
+        # جلوگیری از شمردن چندباره بازدید در یک نشست (session) برای همان مقاله
         if slug not in viewed_articles:
             # if hasattr(article, 'view_count'):
                 # article.view_count += 1

@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmLink.addEventListener('click', function() {
         const targetSlug = articleSelect.value;
         if (targetSlug) {
+            // لینک داخلی با الگوی ثابت /team6/article/<slug>/ ساخته می‌شود تا بعداً در sync_internal_links شناسایی و ذخیره شود.
             const linkHtml = `<a href="/team6/article/${targetSlug}/" class="internal-link">${selectedText}</a>`;
             bodyTextarea.value = bodyTextarea.value.substring(0, selectionStart) + linkHtml + bodyTextarea.value.substring(selectionEnd);
             updatePreview();

@@ -108,6 +108,7 @@
                     <i class="fa-solid fa-book-open"></i> مطالعه
                 </a>
 
+                {# دکمه ویرایش فقط برای نویسنده‌ی مقاله نمایش داده می‌شود (کنترل دسترسی UI؛ کنترل اصلی در view انجام می‌شود). #}
                 {% if request.user.is_authenticated and article.author_user_id == request.user.id %}
                     <a href="{% url 'team6:article_edit' article.slug %}"
                        class="btn btn-outline-warning btn-sm flex-fill">

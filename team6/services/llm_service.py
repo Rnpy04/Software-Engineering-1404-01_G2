@@ -7,6 +7,7 @@ from collections import Counter
 class FreeAIService:
     """سرویس تولید خلاصه و تگ با Hugging Face"""
     def __init__(self):
+        # کلید API از متغیر محیطی خوانده می‌شود تا در ریپو/کد هاردکد نشود.
         self.api_key = os.environ.get("HF_API_KEY")
         self.base_url = "https://router.huggingface.co/hf-inference/models/csebuetnlp/mT5_multilingual_XLSum"
 
@@ -47,6 +48,7 @@ class FreeAIService:
         if len(text) < 50:
             sentences = [s.strip() for s in text.split(".") if s.strip()]
             return ". ".join(sentences[:2]) + "..." if len(sentences) > 1 else text
+        # برای جلوگیری از کندی/خطای سرویس، متن ورودی به طول محدودتری برش داده می‌شود.
         result = self._call_api(text[:2000])
         if result:
             return result.strip()
