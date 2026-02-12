@@ -7,7 +7,6 @@
 {% endblock %}
 
 {% block content %}
-{% with status=request.GET.status|default:"همه" date_from=request.GET.date_from|default:"" date_to=request.GET.date_to|default:"" destination=request.GET.destination|default:"" q=request.GET.q|default:"" sort=request.GET.sort|default:"جدیدترین" %}
 
 <div class="page-header">
     <h2>سفرهای من</h2>
@@ -23,6 +22,7 @@
                     <option value="همه" {% if status == "همه" %}selected{% endif %}>همه</option>
                     <option value="پیشنویس" {% if status == "پیشنویس" %}selected{% endif %}>پیشنویس</option>
                     <option value="فعال" {% if status == "فعال" %}selected{% endif %}>فعال</option>
+                    <option value="تایید شده" {% if status == "تایید شده" %}selected{% endif %}>تایید شده</option>
                     <option value="تمام‌شده" {% if status == "تمام‌شده" %}selected{% endif %}>تمام‌شده</option>
                     <option value="لغو شده" {% if status == "لغو شده" %}selected{% endif %}>لغو شده</option>
                 </select>
@@ -55,7 +55,7 @@
         <div class="t10-filter-grid t10-filter-grid--secondary">
             <div class="t10-field t10-field--wide">
                 <label for="q">جستجو در مقصد یا کد سفر</label>
-                <input id="q" type="text" name="q" value="{{ q }}" placeholder="مثال: شیراز یا کد-۱۰۲">
+                <input id="q" type="text" name="q" value="{{ q }}" placeholder="مثال: شیراز یا ۱۰۲">
             </div>
 
             <div class="t10-field">
@@ -79,173 +79,50 @@
         <thead>
             <tr>
                 <th>کد سفر</th>
-                <th>مبدأ</th>
                 <th>مقصد</th>
                 <th>تاریخ شروع شمسی</th>
                 <th>مدت (روز)</th>
-                <th>بودجه (تومان)</th>
+                <th>هزینه کل (تومان)</th>
                 <th>وضعیت</th>
                 <th>عملیات</th>
             </tr>
         </thead>
         <tbody>
-
-        {% if sort == "قدیمی‌ترین" %}
-
-            {% if status == "همه" or status == "تمام‌شده" %}
-                {% if not date_from or "1404-02-10" >= date_from %}
-                    {% if not date_to or "1404-02-10" <= date_to %}
-                        {% if not destination or destination in "شیراز" %}
-                            {% if not q or q in "شیراز" or q in "کد-۱۰۱" %}
-                                <tr>
-                                    <td>کد-۱۰۱</td><td>تهران</td><td>شیراز</td><td>1404-02-10</td><td>۴</td><td>۱۲٬۰۰۰٬۰۰۰</td>
-                                    <td><span class="t10-badge t10-badge--done">تمام‌شده</span></td>
-                                    <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/1/">مشاهده جزئیات</a></td>
-                                </tr>
-                            {% endif %}
-                        {% endif %}
+        {% for trip in trips %}
+            <tr>
+                <td>{{ trip.id }}</td>
+                <td>{{ trip.destination_name }}</td>
+                <td>{{ trip.start_at_jalali|default:"-" }}</td>
+                <td>{{ trip.days }}</td>
+                <td>{% if trip.total_cost %}{{ trip.total_cost|floatformat:0 }}{% else %}-{% endif %}</td>
+                <td>
+                    {% if trip.status == "DRAFT" %}
+                        <span class="t10-badge t10-badge--draft">{{ trip.status_fa }}</span>
+                    {% elif trip.status == "IN_PROGRESS" %}
+                        <span class="t10-badge t10-badge--active">{{ trip.status_fa }}</span>
+                    {% elif trip.status == "CONFIRMED" %}
+                        <span class="t10-badge t10-badge--confirmed">{{ trip.status_fa }}</span>
+                    {% elif trip.status == "EXPIRED" %}
+                        <span class="t10-badge t10-badge--done">{{ trip.status_fa }}</span>
+                    {% elif trip.status == "CANCELLED" %}
+                        <span class="t10-badge t10-badge--cancelled">{{ trip.status_fa }}</span>
+                    {% else %}
+                        <span class="t10-badge">{{ trip.status_fa }}</span>
                     {% endif %}
-                {% endif %}
-            {% endif %}
-
-            {% if status == "همه" or status == "فعال" %}
-                {% if not date_from or "1404-03-22" >= date_from %}
-                    {% if not date_to or "1404-03-22" <= date_to %}
-                        {% if not destination or destination in "تبریز" %}
-                            {% if not q or q in "تبریز" or q in "کد-۱۰۲" %}
-                                <tr>
-                                    <td>کد-۱۰۲</td><td>اصفهان</td><td>تبریز</td><td>1404-03-22</td><td>۳</td><td>۹٬۵۰۰٬۰۰۰</td>
-                                    <td><span class="t10-badge t10-badge--active">فعال</span></td>
-                                    <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/2/">مشاهده جزئیات</a></td>
-                                </tr>
-                            {% endif %}
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-
-            {% if status == "همه" or status == "پیشنویس" %}
-                {% if not date_from or "1404-05-08" >= date_from %}
-                    {% if not date_to or "1404-05-08" <= date_to %}
-                        {% if not destination or destination in "کیش" %}
-                            {% if not q or q in "کیش" or q in "کد-۱۰۳" %}
-                                <tr>
-                                    <td>کد-۱۰۳</td><td>مشهد</td><td>کیش</td><td>1404-05-08</td><td>۵</td><td>۱۸٬۳۰۰٬۰۰۰</td>
-                                    <td><span class="t10-badge t10-badge--draft">پیشنویس</span></td>
-                                    <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/3/">مشاهده جزئیات</a></td>
-                                </tr>
-                            {% endif %}
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-
-        {% elif sort == "هزینه" %}
-
-            {% if status == "همه" or status == "پیشنویس" %}
-                {% if not date_from or "1404-05-08" >= date_from %}
-                    {% if not date_to or "1404-05-08" <= date_to %}
-                        {% if not destination or destination in "کیش" %}
-                            {% if not q or q in "کیش" or q in "کد-۱۰۳" %}
-                                <tr>
-                                    <td>کد-۱۰۳</td><td>مشهد</td><td>کیش</td><td>1404-05-08</td><td>۵</td><td>۱۸٬۳۰۰٬۰۰۰</td>
-                                    <td><span class="t10-badge t10-badge--draft">پیشنویس</span></td>
-                                    <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/3/">مشاهده جزئیات</a></td>
-                                </tr>
-                            {% endif %}
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-
-            {% if status == "همه" or status == "تمام‌شده" %}
-                {% if not date_from or "1404-02-10" >= date_from %}
-                    {% if not date_to or "1404-02-10" <= date_to %}
-                        {% if not destination or destination in "شیراز" %}
-                            {% if not q or q in "شیراز" or q in "کد-۱۰۱" %}
-                                <tr>
-                                    <td>کد-۱۰۱</td><td>تهران</td><td>شیراز</td><td>1404-02-10</td><td>۴</td><td>۱۲٬۰۰۰٬۰۰۰</td>
-                                    <td><span class="t10-badge t10-badge--done">تمام‌شده</span></td>
-                                    <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/1/">مشاهده جزئیات</a></td>
-                                </tr>
-                            {% endif %}
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-
-            {% if status == "همه" or status == "فعال" %}
-                {% if not date_from or "1404-03-22" >= date_from %}
-                    {% if not date_to or "1404-03-22" <= date_to %}
-                        {% if not destination or destination in "تبریز" %}
-                            {% if not q or q in "تبریز" or q in "کد-۱۰۲" %}
-                                <tr>
-                                    <td>کد-۱۰۲</td><td>اصفهان</td><td>تبریز</td><td>1404-03-22</td><td>۳</td><td>۹٬۵۰۰٬۰۰۰</td>
-                                    <td><span class="t10-badge t10-badge--active">فعال</span></td>
-                                    <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/2/">مشاهده جزئیات</a></td>
-                                </tr>
-                            {% endif %}
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-
-        {% else %}
-
-            {% if status == "همه" or status == "پیشنویس" %}
-                {% if not date_from or "1404-05-08" >= date_from %}
-                    {% if not date_to or "1404-05-08" <= date_to %}
-                        {% if not destination or destination in "کیش" %}
-                            {% if not q or q in "کیش" or q in "کد-۱۰۳" %}
-                                <tr>
-                                    <td>کد-۱۰۳</td><td>مشهد</td><td>کیش</td><td>1404-05-08</td><td>۵</td><td>۱۸٬۳۰۰٬۰۰۰</td>
-                                    <td><span class="t10-badge t10-badge--draft">پیشنویس</span></td>
-                                    <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/3/">مشاهده جزئیات</a></td>
-                                </tr>
-                            {% endif %}
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-
-            {% if status == "همه" or status == "فعال" %}
-                {% if not date_from or "1404-03-22" >= date_from %}
-                    {% if not date_to or "1404-03-22" <= date_to %}
-                        {% if not destination or destination in "تبریز" %}
-                            {% if not q or q in "تبریز" or q in "کد-۱۰۲" %}
-                                <tr>
-                                    <td>کد-۱۰۲</td><td>اصفهان</td><td>تبریز</td><td>1404-03-22</td><td>۳</td><td>۹٬۵۰۰٬۰۰۰</td>
-                                    <td><span class="t10-badge t10-badge--active">فعال</span></td>
-                                    <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/2/">مشاهده جزئیات</a></td>
-                                </tr>
-                            {% endif %}
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-
-            {% if status == "همه" or status == "تمام‌شده" %}
-                {% if not date_from or "1404-02-10" >= date_from %}
-                    {% if not date_to or "1404-02-10" <= date_to %}
-                        {% if not destination or destination in "شیراز" %}
-                            {% if not q or q in "شیراز" or q in "کد-۱۰۱" %}
-                                <tr>
-                                    <td>کد-۱۰۱</td><td>تهران</td><td>شیراز</td><td>1404-02-10</td><td>۴</td><td>۱۲٬۰۰۰٬۰۰۰</td>
-                                    <td><span class="t10-badge t10-badge--done">تمام‌شده</span></td>
-                                    <td><a class="t10-btn t10-btn--secondary" href="/team10/trips/1/">مشاهده جزئیات</a></td>
-                                </tr>
-                            {% endif %}
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-
-        {% endif %}
+                </td>
+                <td><a class="t10-btn t10-btn--secondary" href="{% url 'team10:trip_detail' trip.id %}">مشاهده جزئیات</a></td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 2rem;">
+                    سفری یافت نشد.
+                </td>
+            </tr>
+        {% endfor %}
         </tbody>
     </table>
 </section>
 
-{% endwith %}
 {% endblock %}
 
 {% block extra_js %}

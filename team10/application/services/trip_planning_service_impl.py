@@ -1,6 +1,8 @@
-from datetime import datetime, timedelta
-from typing import List, Optional, Tuple
+from datetime import datetime, timedelta, date
+from typing import List, Optional, Tuple, Dict, Any
 from dataclasses import dataclass
+
+from django.db.models import Q
 
 from ...models import Trip as TripModel, TripRequirements as TripRequirementsModel, PreferenceConstraint as PreferenceConstraintModel
 from ...domain.entities.trip import Trip
@@ -131,6 +133,7 @@ class TripPlanningServiceImpl(TripPlanningService):
             recommended_places=recommended_places
         )
 
+        print(f"[TripPlanning] User_id: {user_id}")
         print(f"[TripPlanning] Region: {region.name} (id={region.id})")
         print(f"[TripPlanning] Season: {season.value}")
         print(f"[TripPlanning] Recommended places: {[(p.place_id, p.score) for p in recommended_places]}")
@@ -669,6 +672,101 @@ class TripPlanningServiceImpl(TripPlanningService):
             is_within_budget=is_within_budget,
             analysis=analysis
         )
+
+    def get_user_trips(
+        self,
+        user_id: str,
+        status: Optional[str] = None,
+        destination: Optional[str] = None,
+        date_from: Optional[date] = None,
+        date_to: Optional[date] = None,
+        search_query: Optional[str] = None,
+        sort_by: str = 'newest'
+    ) -> List[Dict[str, Any]]:
+        """Get all trips for a user with optional filtering and sorting.
+        
+        Args:
+            user_id: The user's ID
+            status: Filter by status (DRAFT, IN_PROGRESS, CONFIRMED, CANCELLED, EXPIRED)
+            destination: Filter by destination name (partial match)
+            date_from: Filter trips starting on or after this date
+            date_to: Filter trips starting on or before this date
+            search_query: Search in destination name or trip ID
+            sort_by: Sort order ('newest', 'oldest', 'cost')
+            
+        Returns:
+            List of trip dictionaries with computed fields
+        """
+        # Start with user's trips
+        qs = TripModel.objects.filter(user_id=user_id).select_related('requirements')
+        
+        # Apply status filter
+        if status:
+            qs = qs.filter(status=status)
+        
+        # Apply destination filter
+        if destination:
+            qs = qs.filter(
+                Q(destination_name__icontains=destination) |
+                Q(requirements__destination_name__icontains=destination)
+            )
+        
+        # Apply date range filters
+        if date_from:
+            qs = qs.filter(requirements__start_at__date__gte=date_from)
+        
+        if date_to:
+            qs = qs.filter(requirements__start_at__date__lte=date_to)
+        
+        # Apply search query
+        if search_query:
+            # Search in destination name or trip ID
+            try:
+                trip_id = int(search_query)
+                qs = qs.filter(
+                    Q(id=trip_id) |
+                    Q(destination_name__icontains=search_query) |
+                    Q(requirements__destination_name__icontains=search_query)
+                )
+            except ValueError:
+                qs = qs.filter(
+                    Q(destination_name__icontains=search_query) |
+                    Q(requirements__destination_name__icontains=search_query)
+                )
+        
+        # Apply sorting
+        if sort_by == 'oldest':
+            qs = qs.order_by('created_at')
+        elif sort_by == 'cost':
+            # For cost sorting, we need to compute total cost, so we'll sort in Python
+            trips_list = list(qs)
+            trips_list.sort(key=lambda t: t.calculate_total_cost(), reverse=True)
+            return self._trips_to_dict_list(trips_list)
+        else:  # 'newest' is default
+            qs = qs.order_by('-created_at')
+        
+        return self._trips_to_dict_list(list(qs))
+
+    def _trips_to_dict_list(self, trips: List[TripModel]) -> List[Dict[str, Any]]:
+        """Convert list of Trip models to list of dictionaries with computed fields."""
+        result = []
+        for trip in trips:
+            req = trip.requirements
+            days = (req.end_at - req.start_at).days if req.end_at and req.start_at else 0
+            
+            result.append({
+                'id': trip.id,
+                'destination_name': trip.destination_name or req.destination_name,
+                'start_at': req.start_at,
+                'days': days,
+                'budget_level': req.budget_level,
+                'travelers_count': req.travelers_count,
+                'total_cost': trip.calculate_total_cost(),
+                'status': trip.status,
+                'created_at': trip.created_at,
+            })
+        
+        return result
 
     def _get_preference_description(self, preference_tag: str) -> str:
         """Get description for preference tag."""

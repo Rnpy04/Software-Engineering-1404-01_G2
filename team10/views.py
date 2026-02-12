@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from core.auth import api_login_required
 from .models import Trip, TripRequirements, PreferenceConstraint
+from .services import trip_planning_service
 
 
 TEAM_NAME = "team10"
@@ -216,12 +217,102 @@ def home(request):
 
 
 def trips_list(request):
-    """نمایش لیست تمام سفرها"""
+    """نمایش لیست تمام سفرها با فیلتر و مرتب‌سازی"""
+    # Get filter parameters from request
+    status_fa = request.GET.get('status', 'همه')
+    date_from_str = request.GET.get('date_from', '').strip()
+    date_to_str = request.GET.get('date_to', '').strip()
+    destination = request.GET.get('destination', '').strip()
+    search_query = request.GET.get('q', '').strip()
+    sort_fa = request.GET.get('sort', 'جدیدترین')
+    
+    # Map Persian status to English
+    status_map = {
+        'همه': None,
+        'پیشنویس': 'DRAFT',
+        'فعال': 'IN_PROGRESS',
+        'تایید شده': 'CONFIRMED',
+        'تمام‌شده': 'EXPIRED',
+        'لغو شده': 'CANCELLED',
+    }
+    status = status_map.get(status_fa, None)
+    
+    # Map Persian sort to English
+    sort_map = {
+        'جدیدترین': 'newest',
+        'قدیمی‌ترین': 'oldest',
+        'هزینه': 'cost',
+    }
+    sort_by = sort_map.get(sort_fa, 'newest')
+    
+    # Parse Jalali dates
+    date_from = None
+    date_to = None
+    if date_from_str:
+        try:
+            date_from = parse_jalali_date(date_from_str)
+        except Exception:
+            pass
+    if date_to_str:
+        try:
+            date_to = parse_jalali_date(date_to_str)
+        except Exception:
+            pass
+    
+    # Get user ID
+    user_id = str(request.user.id) if request.user.is_authenticated else "0"
+    
     try:
-        qs = _safe_trips_queryset(request)
-        return render(request, "team10/trips_list.html", {"trips": list(qs)})
+        # Get trips from service
+        trips_data = trip_planning_service.get_user_trips(
+            user_id=user_id,
+            status=status,
+            destination=destination if destination else None,
+            date_from=date_from,
+            date_to=date_to,
+            search_query=search_query if search_query else None,
+            sort_by=sort_by
+        )
+        
+        # Add computed display fields
+        trips = []
+        for t in trips_data:
+            start_date = t['start_at'].date() if hasattr(t['start_at'], 'date') else t['start_at']
+            trips.append({
+                'id': t['id'],
+                'destination_name': t['destination_name'],
+                'start_at_jalali': to_jalali_str(start_date),
+                'days': t['days'],
+                'budget_level': t['budget_level'],
+                'total_cost': t['total_cost'],
+                'status': t['status'],
+                'status_fa': _get_status_fa(t['status']),
+            })
     except OperationalError:
-        return render(request, "team10/trips_list.html", {"trips": []})
+        trips = []
+    
+    return render(request, "team10/trips_list.html", {
+        "trips": trips,
+        "status": status_fa,
+        "date_from": date_from_str,
+        "date_to": date_to_str,
+        "destination": destination,
+        "q": search_query,
+        "sort": sort_fa,
+    })
+
+
+def _get_status_fa(status: str) -> str:
+    """Convert English status to Persian display name."""
+    status_display = {
+        'DRAFT': 'پیشنویس',
+        'IN_PROGRESS': 'فعال',
+        'CONFIRMED': 'تایید شده',
+        'CANCELLED': 'لغو شده',
+        'EXPIRED': 'تمام‌شده',
+        'NEEDS_REGENERATION': 'نیاز به بازسازی',
+    }
+    return status_display.get(status, status)
 
 
 def trip_detail(request, trip_id: int):

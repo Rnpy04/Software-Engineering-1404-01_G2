@@ -39,7 +39,7 @@ def create_trip_api(request):
 
         # Extract user_id (hash string) from user object
         user_id = str(user.id) if hasattr(user, 'id') else None
-        if not user_id:
+        if user_id is None:
             return JsonResponse({
                 'error': 'User ID not found'
             }, status=401)
