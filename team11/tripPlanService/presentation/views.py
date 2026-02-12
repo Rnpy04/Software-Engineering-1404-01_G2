@@ -11,9 +11,9 @@ from business.services import (
 )
 from .serializers import (
     TripListSerializer, TripDetailSerializer, TripCreateUpdateSerializer,
-    TripDaySerializer, TripItemSerializer, ItemDependencySerializer,
-    ShareLinkSerializer, VoteSerializer, TripReviewSerializer,
-    UserMediaSerializer
+    TripDaySerializer, TripItemSerializer, TripItemCreateSerializer,
+    ItemDependencySerializer, ShareLinkSerializer, VoteSerializer,
+    TripReviewSerializer, UserMediaSerializer
 )
 from .pdf_generator import generate_trip_pdf, get_filename_for_trip
 
@@ -93,8 +93,16 @@ class TripViewSet(viewsets.ViewSet):
 
     def update(self, request, pk=None):
         """PUT /api/trips/{id}/ - Update a trip"""
+        return self._update_trip(request, pk, partial=False)
+
+    def partial_update(self, request, pk=None):
+        """PATCH /api/trips/{id}/ - Partial update a trip"""
+        return self._update_trip(request, pk, partial=True)
+
+    def _update_trip(self, request, pk, partial=False):
+        """Helper method for update and partial_update"""
         serializer = TripCreateUpdateSerializer(
-            data=request.data, partial=True)
+            data=request.data, partial=partial)
 
         if not serializer.is_valid():
             return Response(
@@ -315,19 +323,14 @@ class TripViewSet(viewsets.ViewSet):
         Used by Trip Generation Service (Mohammad Hossein) to add days
         to a generated trip.
 
-        Request body: {
-            "day_index": 1,
-            "specific_date": "2026-03-10",
-            "start_geo_location": "اصفهان" (optional)
-        }
+        Request body: Empty (day_index and specific_date are auto-generated)
 
         Returns: {
             "day_id": 123,
-            "trip": 456,
+            "trip_id": 456,
             "day_index": 1,
             "specific_date": "2026-03-10",
-            "start_geo_location": "اصفهان",
-            "items": []
+            "created_at": "..."
         }
         """
         # Verify trip exists
@@ -338,22 +341,18 @@ class TripViewSet(viewsets.ViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Validate input
-        serializer = TripDaySerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         try:
-            # Create day
-            day = TripDayService.create_day(
-                int(pk),
-                serializer.validated_data
-            )
+            # Create day (auto-calculates day_index and specific_date)
+            day = TripDayService.create_day(int(pk))
+            
             return Response(
-                TripDaySerializer(day).data,
+                {
+                    'day_id': day.day_id,
+                    'trip_id': day.trip.trip_id,
+                    'day_index': day.day_index,
+                    'specific_date': day.specific_date.isoformat(),
+                    'created_at': day.trip.created_at.isoformat() if hasattr(day.trip, 'created_at') else None
+                },
                 status=status.HTTP_201_CREATED
             )
         except ValueError as e:
@@ -476,7 +475,11 @@ class TripDayViewSet(viewsets.ViewSet):
             )
 
         # Get items array from request
-        items_data = request.data.get('items', [])
+        # Support both {"items": [...]} and direct array [...]
+        if isinstance(request.data, list):
+            items_data = request.data
+        else:
+            items_data = request.data.get('items', [])
 
         if not items_data:
             return Response(
@@ -496,7 +499,7 @@ class TripDayViewSet(viewsets.ViewSet):
 
         for idx, item_data in enumerate(items_data):
             # Validate each item
-            serializer = TripItemSerializer(data=item_data)
+            serializer = TripItemCreateSerializer(data=item_data)
 
             if not serializer.is_valid():
                 errors.append({

@@ -179,9 +179,35 @@ class TripDayService:
         return TripDayRepository.get_by_id(day_id)
 
     @staticmethod
-    def create_day(trip_id: int, data: Dict[str, Any]) -> TripDay:
+    def create_day(trip_id: int, data: Dict[str, Any] = None) -> TripDay:
         """Create a new day for a trip"""
-        day_data = {**data, 'trip_id': trip_id}
+        if data is None:
+            data = {}
+        
+        # Get the trip to calculate day_index and specific_date
+        trip = TripRepository.get_by_id(trip_id)
+        if not trip:
+            raise ValueError(f"Trip with id {trip_id} not found")
+        
+        # Get existing days count to determine new day_index
+        existing_days = list(TripDayRepository.get_by_trip(trip_id))
+        new_day_index = len(existing_days) + 1
+        
+        # Calculate specific_date based on start_date and day_index
+        from datetime import timedelta
+        specific_date = trip.start_date + timedelta(days=new_day_index - 1)
+        
+        # Validate that we're not exceeding trip duration
+        if new_day_index > trip.duration_days:
+            raise ValueError(f"Cannot add more days than trip duration ({trip.duration_days})")
+        
+        day_data = {
+            **data,
+            'trip_id': trip_id,
+            'day_index': new_day_index,
+            'specific_date': specific_date
+        }
+        
         return TripDayRepository.create(day_data)
 
     @staticmethod

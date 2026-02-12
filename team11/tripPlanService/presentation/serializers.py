@@ -58,6 +58,34 @@ class TripItemSerializer(serializers.ModelSerializer):
         return data
 
 
+class TripItemCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating TripItem (accepts all fields)"""
+
+    class Meta:
+        model = TripItem
+        fields = [
+            'item_type', 'place_ref_id', 'title', 'category',
+            'address_summary', 'lat', 'lng', 'wiki_summary', 'wiki_link',
+            'main_image_url', 'start_time', 'end_time', 'duration_minutes',
+            'sort_order', 'is_locked', 'price_tier', 'estimated_cost'
+        ]
+
+    def validate(self, data):
+        """Validate time fields"""
+        if 'start_time' in data and 'end_time' in data:
+            if data['start_time'] >= data['end_time']:
+                raise serializers.ValidationError(
+                    "End time must be after start time"
+                )
+
+        if 'duration_minutes' in data and data['duration_minutes'] < 60:
+            raise serializers.ValidationError(
+                "Duration must be at least 60 minutes"
+            )
+
+        return data
+
+
 class ItemDependencySerializer(serializers.ModelSerializer):
     """Serializer for ItemDependency model"""
 
