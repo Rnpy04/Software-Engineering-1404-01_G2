@@ -2,33 +2,28 @@
 Service instances for Team10 application.
 
 This module provides singleton instances of application services that can be
-imported and reused across the application. This is the standard Django pattern
-for stateless services.
-
-All services here should be stateless - they should not store request-specific
-data as instance variables.
+imported and reused across the application.
 """
 
+from .infrastructure.clients.facilities_client import MockFacilitiesClient
+from .infrastructure.clients.recommendation_client import MockRecommendationClient
+from .infrastructure.clients.wiki_client import MockWikiClient
 from .application.services.trip_planning_service_impl import TripPlanningServiceImpl
 
+# Singleton infrastructure service instances
+facilities_service = MockFacilitiesClient()
+recommendation_service = MockRecommendationClient()
+wiki_service = MockWikiClient()
 
-# Singleton service instances
-# These are created once when the module is first imported
-# and reused for all requests
+# Singleton application service with injected dependencies
+trip_planning_service = TripPlanningServiceImpl(
+    facilities_service=facilities_service,
+    recommendation_service=recommendation_service
+)
 
-trip_planning_service = TripPlanningServiceImpl()
-"""
-Singleton instance of TripPlanningService.
-Use this for all trip planning operations across the application.
-
-Example:
-    from team10.services import trip_planning_service
-
-    trip = trip_planning_service.create_initial_trip(data, user)
-"""
-
-
-# Export all services
 __all__ = [
+    'facilities_service',
+    'recommendation_service',
+    'wiki_service',
     'trip_planning_service',
 ]
