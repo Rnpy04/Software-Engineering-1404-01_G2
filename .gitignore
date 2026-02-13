@@ -22,7 +22,3 @@ media/
 node_modules/
 dist/
 build/
-team11/.env
-
-frontend_fixes_backup/
-team11/tripPlanService/reproduce_list_bug.py
