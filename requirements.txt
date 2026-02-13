@@ -7,5 +7,6 @@ PyMySQL
 gunicorn
 whitenoise
 jdatetime
+requests
 djangorestframework>=3.14.0
 python-dateutil>=2.8.2

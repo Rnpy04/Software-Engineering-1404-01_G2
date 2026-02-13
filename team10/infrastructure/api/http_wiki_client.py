@@ -45,15 +45,15 @@ class HttpWikiClient(WikiServicePort):
                 if not content:
                     content = data.get("description")
                 
-                return content if content else "No description available for this place."
+                return content if content else ""
             
             elif response.status_code == 404:
                 logger.warning(f"Wiki content not found for place: {destination_name}")
-                return "Description not found."
+                return ""
             
             else:
                 logger.error(f"Wiki Service Error: Status {response.status_code} for {destination_name}")
-                return "Wiki service error."
+                return ""
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Connection error to Wiki Service: {e}")
