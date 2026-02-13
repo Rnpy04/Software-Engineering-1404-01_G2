@@ -81,7 +81,7 @@
         
         <div class="row">
             <div class="col-md-6 border-start">
-                <h6 class="small fw-bold text-primary">اطلاعات سیستمی:</h6>
+                <h6 class="small fw-bold text-primary"> لینک های داخلی:</h6>
                 <ul class="list-unstyled small">
                     {% for link in article.outgoing_links.all|slice:":5" %}
                         <li><i class="fa-solid fa-link text-muted me-1"></i> <a href="{% url 'team6:article_detail' link.to_article.slug %}">{{ link.to_article.title_fa }}</a></li>
@@ -90,7 +90,21 @@
                     {% endfor %}
                 </ul>
             </div>
-
+            <div class="col-md-4 border-start">
+                <h6 class="small fw-bold text-danger">منابع و مراجع خارجی:</h6>
+                <ul class="list-unstyled small">
+                    {% for ref in article.wikiarticleref_set.all %}
+                        <li>
+                            <i class="fa-solid fa-external-link text-muted me-1"></i> 
+                            <a href="{{ ref.url }}" target="_blank" title="{{ ref.publisher|default:'' }}">
+                                {{ ref.title|truncatechars:40 }}
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li class="text-muted">منبع خارجی ثبت نشده.</li>
+                    {% endfor %}
+                </ul>
+            </div>
             <div class="col-md-6">
                 <h6 class="small fw-bold text-success">استخراج شده از متن:</h6>
                 <div id="extracted-refs-content" class="small text-muted" style="white-space: pre-line;">
