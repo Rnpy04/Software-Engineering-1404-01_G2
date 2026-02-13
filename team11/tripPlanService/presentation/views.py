@@ -1243,14 +1243,15 @@ def suggest_destinations(request):
     """
     POST /api/destinations/suggest/
 
-    پیشنهاد مقصد - پیشنهاد 3 شهر بر اساس فصل، بودجه و سبک سفر
+    پیشنهاد مقصد - پیشنهاد 3 شهر بر اساس فصل، بودجه، سبک سفر و منطقه
 
     ورودی:
     {
         "season": "spring",                    // فصل: spring/summer/fall/winter
         "budget_level": "MEDIUM",              // بودجه: ECONOMY/MEDIUM/LUXURY/UNLIMITED
         "travel_style": "COUPLE",              // سبک: SOLO/COUPLE/FAMILY/FRIENDS/BUSINESS
-        "interests": ["تاریخی", "طبیعت"]      // علایق (اختیاری)
+        "interests": ["تاریخی", "طبیعت"],      // علایق (اختیاری)
+        "region": "NORTH"                      // منطقه (اختیاری): NORTH/SOUTH/EAST/WEST/CENTRAL
     }
 
     خروجی:
@@ -1270,9 +1271,6 @@ def suggest_destinations(request):
             }
         ]
     }
-
-    وابستگی:
-    - Wiki Service (محمدحسین): توضیحات و تصاویر شهرها
     """
 
     # 1. اعتبارسنجی ورودی
@@ -1280,15 +1278,12 @@ def suggest_destinations(request):
     budget_level = request.data.get('budget_level')
     travel_style = request.data.get('travel_style', 'SOLO')
     interests = request.data.get('interests', [])
+    region = request.data.get('region')
 
+    # اعتبارسنجی budget_level (اختیاری کردن برای فرم، اگر نال بود دیفالت MEDIUM)
+    # اما طبق فرانت فعلی ممکنه نال بیاد اگر سلکتور نباشه.
     if not budget_level:
-        return Response(
-            {
-                "error": "budget_level is required",
-                "error_fa": "سطح بودجه الزامی است"
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
+         budget_level = 'MEDIUM'
 
     # اعتبارسنجی season
     valid_seasons = ['spring', 'summer', 'fall', 'winter']
@@ -1298,13 +1293,7 @@ def suggest_destinations(request):
     # اعتبارسنجی budget_level
     valid_budgets = ['ECONOMY', 'MEDIUM', 'LUXURY', 'UNLIMITED']
     if budget_level not in valid_budgets:
-        return Response(
-            {
-                "error": f"budget_level must be one of: {', '.join(valid_budgets)}",
-                "error_fa": "سطح بودجه نامعتبر است"
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        budget_level = 'MEDIUM'
 
     # اعتبارسنجی travel_style
     valid_styles = ['SOLO', 'COUPLE', 'FAMILY', 'FRIENDS', 'BUSINESS']
@@ -1317,7 +1306,8 @@ def suggest_destinations(request):
             season=season,
             budget_level=budget_level,
             travel_style=travel_style,
-            interests=interests
+            interests=interests,
+            region=region
         )
 
         return Response(
@@ -1329,7 +1319,8 @@ def suggest_destinations(request):
                     "season": season,
                     "budget_level": budget_level,
                     "travel_style": travel_style,
-                    "interests": interests
+                    "interests": interests,
+                    "region": region
                 }
             },
             status=status.HTTP_200_OK
@@ -1349,91 +1340,238 @@ def _generate_destination_suggestions(
         season: str,
         budget_level: str,
         travel_style: str,
-        interests: List[str]
+        interests: List[str],
+        region: Optional[str] = None
 ) -> List[Dict]:
     """
     منطق اصلی پیشنهاد مقصد
-
-    الگوریتم:
-    1. فیلتر شهرها بر اساس فصل مناسب
-    2. فیلتر بر اساس بودجه
-    3. امتیازدهی بر اساس interests
-    4. مرتب‌سازی بر اساس امتیاز
-    5. برگرداندن 3 تا برتر
     """
 
-    # دیتابیس مقصدهای محبوب (در واقعیت از Facility/Wiki Service می‌آید)
+    # دیتابیس مقصدهای محبوب (توسعه یافته با Region و Image)
     destinations_db = [
+        # --- CENTER ---
         {
             "city": "اصفهان",
             "province": "اصفهان",
+            "region": "CENTRAL",
             "best_seasons": ["spring", "fall"],
             "budget_min": "ECONOMY",
-            "categories": ["تاریخی", "فرهنگی", "معماری"],
+            "categories": ["تاریخی", "فرهنگی", "معماری", "خرید", "غذا"],
             "suitable_for": ["COUPLE", "FAMILY", "FRIENDS"],
             "highlights": ["میدان نقش جهان", "سی‌وسه‌پل", "مسجد شیخ لطف‌الله"],
-            "description": "اصفهان نصف جهان با جاذبه‌های تاریخی بی‌نظیر و آب و هوای معتدل",
+            "description": "اصفهان نصف جهان با جاذبه‌های تاریخی بی‌نظیر و آب و هوای معتدل، مهد هنر و معماری ایرانیست.",
             "estimated_cost_3days": {"ECONOMY": 1500000, "MEDIUM": 2500000, "LUXURY": 5000000},
-            "images": []
-        },
-        {
-            "city": "شیراز",
-            "province": "فارس",
-            "best_seasons": ["spring", "winter"],
-            "budget_min": "ECONOMY",
-            "categories": ["تاریخی", "فرهنگی", "باغ"],
-            "suitable_for": ["COUPLE", "FAMILY", "FRIENDS", "SOLO"],
-            "highlights": ["تخت جمشید", "حافظیه", "باغ ارم"],
-            "description": "شیراز شهر شعر و ادب و گل و بلبل با تاریخی کهن",
-            "estimated_cost_3days": {"ECONOMY": 1400000, "MEDIUM": 2300000, "LUXURY": 4500000},
-            "images": []
-        },
-        {
-            "city": "مشهد",
-            "province": "خراسان رضوی",
-            "best_seasons": ["spring", "summer", "fall"],
-            "budget_min": "ECONOMY",
-            "categories": ["مذهبی", "زیارتی", "فرهنگی"],
-            "suitable_for": ["FAMILY", "COUPLE", "FRIENDS"],
-            "highlights": ["حرم امام رضا", "بازار رضا", "موزه آستان قدس"],
-            "description": "مشهد شهر مقدس و پرزیارت با امکانات گردشگری عالی",
-            "estimated_cost_3days": {"ECONOMY": 1200000, "MEDIUM": 2000000, "LUXURY": 4000000},
-            "images": []
+            "images": ["https://images.unsplash.com/photo-1594895689718-d7482811a221?q=80&w=2600&auto=format&fit=crop"]
         },
         {
             "city": "تهران",
             "province": "تهران",
+            "region": "CENTRAL",
             "best_seasons": ["spring", "fall"],
             "budget_min": "MEDIUM",
-            "categories": ["شهری", "فرهنگی", "خرید"],
+            "categories": ["شهری", "فرهنگی", "خرید", "موزه‌گردی", "شبگردی"],
             "suitable_for": ["BUSINESS", "SOLO", "FRIENDS"],
-            "highlights": ["برج میلاد", "کاخ گلستان", "بازار تهران"],
-            "description": "تهران پایتخت پرجنب‌وجوش با تنوع بالای امکانات",
+            "highlights": ["برج میلاد", "کاخ گلستان", "پل طبیعت"],
+            "description": "تهران پایتخت مدرن و پرجنب‌وجوش ایران، ترکیبی از تاریخ قاجار و زندگی مدرن شهری.",
             "estimated_cost_3days": {"ECONOMY": 2000000, "MEDIUM": 3500000, "LUXURY": 7000000},
-            "images": []
-        },
-        {
-            "city": "رامسر",
-            "province": "مازندران",
-            "best_seasons": ["summer", "spring"],
-            "budget_min": "MEDIUM",
-            "categories": ["طبیعت", "ساحل", "خانوادگی"],
-            "suitable_for": ["FAMILY", "COUPLE"],
-            "highlights": ["جنگل‌های شمال", "ساحل خزر", "تله‌کابین"],
-            "description": "رامسر جزیره سبز ایران با طبیعت بکر و آب و هوای دلپذیر",
-            "estimated_cost_3days": {"ECONOMY": 1800000, "MEDIUM": 3000000, "LUXURY": 6000000},
-            "images": []
+            "images": ["https://images.unsplash.com/photo-1569420650949-65391c49b6b7?q=80&w=2574&auto=format&fit=crop"]
         },
         {
             "city": "یزد",
             "province": "یزد",
+            "region": "CENTRAL",
             "best_seasons": ["spring", "fall", "winter"],
             "budget_min": "ECONOMY",
-            "categories": ["تاریخی", "معماری", "کویری"],
+            "categories": ["تاریخی", "معماری", "کویری", "آرامش"],
             "suitable_for": ["COUPLE", "FRIENDS", "SOLO"],
-            "highlights": ["شهر بادگیرها", "آتشکده", "باغ دولت‌آباد"],
-            "description": "یزد شهر کویری با معماری خاص و جاذبه‌های تاریخی منحصربه‌فرد",
+            "highlights": ["باغ دولت‌آباد", "مسجد جامع", "کویر کاراکال"],
+            "description": "یزد، شهر بادگیرها و اولین شهر خشتی ثبت شده جهان، با آرامشی عجیب و کویرهای پرستاره.",
             "estimated_cost_3days": {"ECONOMY": 1300000, "MEDIUM": 2200000, "LUXURY": 4200000},
+            "images": ["https://images.unsplash.com/photo-1628172909968-3d1425114440?q=80&w=2670&auto=format&fit=crop"]
+        },
+        {
+            "city": "کاشان",
+            "province": "اصفهان",
+            "region": "CENTRAL",
+            "best_seasons": ["spring", "fall"],
+            "budget_min": "ECONOMY",
+            "categories": ["تاریخی", "فرهنگی", "گلاب‌گیری"],
+            "suitable_for": ["FAMILY", "COUPLE"],
+            "highlights": ["خانه طباطبایی‌ها", "باغ فین", "تپه سیلک"],
+            "description": "کاشان شهر گل و گلاب و خانه‌های تاریخی باشکوه، نگین کویر مرکزی ایران.",
+            "estimated_cost_3days": {"ECONOMY": 1200000, "MEDIUM": 2000000, "LUXURY": 3500000},
+            "images": ["https://images.unsplash.com/photo-1605634261778-5e5803274291?q=80&w=2670&auto=format&fit=crop"]
+        },
+
+        # --- SOUTH ---
+        {
+            "city": "شیراز",
+            "province": "فارس",
+            "region": "SOUTH",
+            "best_seasons": ["spring", "winter"],
+            "budget_min": "ECONOMY",
+            "categories": ["تاریخی", "فرهنگی", "باغ", "ادبی"],
+            "suitable_for": ["COUPLE", "FAMILY", "FRIENDS", "SOLO"],
+            "highlights": ["تخت جمشید", "حافظیه", "نصیرالملک"],
+            "description": "شیراز شهر شعر و ادب و بهارنارنج، پایتخت فرهنگی ایران با مردمی خونگرم.",
+            "estimated_cost_3days": {"ECONOMY": 1400000, "MEDIUM": 2300000, "LUXURY": 4500000},
+            "images": ["https://images.unsplash.com/photo-1596700085468-2b0475308643?q=80&w=2670&auto=format&fit=crop"]
+        },
+        {
+            "city": "کیش",
+            "province": "هرمزگان",
+            "region": "SOUTH",
+            "best_seasons": ["winter", "spring", "fall"],
+            "budget_min": "MEDIUM",
+            "categories": ["تفریحی", "ساحل", "خرید", "لوکس"],
+            "suitable_for": ["COUPLE", "FRIENDS", "FAMILY"],
+            "highlights": ["ساحل مرجان", "کشتی یونانی", "تفریحات آبی"],
+            "description": "جزیره کیش، مروارید خلیج فارس، مدرن‌ترین مقصد گردشگری ایران با تفریحات آبی هیجان‌انگیز.",
+            "estimated_cost_3days": {"ECONOMY": 3000000, "MEDIUM": 6000000, "LUXURY": 15000000},
+            "images": []
+        },
+        {
+            "city": "قشم",
+            "province": "هرمزگان",
+            "region": "SOUTH",
+            "best_seasons": ["winter", "fall", "spring"],
+            "budget_min": "ECONOMY",
+            "categories": ["طبیعت", "خرید", "ماجراجویی"],
+            "suitable_for": ["FRIENDS", "FAMILY", "SOLO"],
+            "highlights": ["دره ستارگان", "جزایر ناز", "جنگل حرا"],
+            "description": "قشم، بزرگترین جزیره خلیج فارس با عجایب هفتگانه طبیعی و بازارهای ارزان قیمت.",
+            "estimated_cost_3days": {"ECONOMY": 2000000, "MEDIUM": 3500000, "LUXURY": 6000000},
+            "images": []
+        },
+        {
+            "city": "اهواز",
+            "province": "خوزستان",
+            "region": "SOUTH",
+            "best_seasons": ["winter", "spring"],
+            "budget_min": "ECONOMY",
+            "categories": ["غذا", "شبگردی", "رودخانه"],
+            "suitable_for": ["FRIENDS", "FAMILY"],
+            "highlights": ["پل سفید", "لشکرآباد", "کارون"],
+            "description": "اهواز شهر پل‌ها و فلافل، با شب‌های زنده در کنار رود همیشه خروشان کارون.",
+            "estimated_cost_3days": {"ECONOMY": 1500000, "MEDIUM": 2500000, "LUXURY": 4000000},
+            "images": []
+        },
+
+        # --- NORTH ---
+        {
+            "city": "رامسر",
+            "province": "مازندران",
+            "region": "NORTH",
+            "best_seasons": ["summer", "spring", "fall"],
+            "budget_min": "MEDIUM",
+            "categories": ["طبیعت", "ساحل", "خانوادگی", "جنگل"],
+            "suitable_for": ["FAMILY", "COUPLE"],
+            "highlights": ["جواهرده", "تله‌کابین", "کاخ مرمر"],
+            "description": "رامسر عروس شهرهای ایران، جایی که جنگل و دریا به هم می‌رسند.",
+            "estimated_cost_3days": {"ECONOMY": 1800000, "MEDIUM": 3000000, "LUXURY": 6000000},
+            "images": []
+        },
+        {
+            "city": "رشت",
+            "province": "گیلان",
+            "region": "NORTH",
+            "best_seasons": ["spring", "fall", "summer"],
+            "budget_min": "ECONOMY",
+            "categories": ["غذا", "فرهنگی", "طبیعت", "باران"],
+            "suitable_for": ["FRIENDS", "FAMILY", "COUPLE"],
+            "highlights": ["میدان شهرداری", "بازار بزرگ", "موزه میراث روستایی"],
+            "description": "رشت شهر خلاق خوراک‌شناسی یونسکو، با باران‌های نقره‌ای و فرهنگ غنی گیلکی.",
+            "estimated_cost_3days": {"ECONOMY": 1500000, "MEDIUM": 2500000, "LUXURY": 4500000},
+            "images": []
+        },
+        {
+            "city": "تبریز",
+            "province": "آذربایجان شرقی",
+            "region": "NORTH", # Geographically NW, putting in North bucket or needs WEST? Let's keep NORTH or create WEST.
+            # Using WEST for Tabriz usually better, but if UI has only 5 regions. Assuming Tabriz is WEST.
+            # Let's check available regions in Frontend: NORTH, SOUTH, EAST, WEST, CENTRAL.
+            # So Tabriz -> WEST.
+            # Wait, moving Tabriz to WEST section below.
+            "city": "ماسوله",
+            "province": "گیلان",
+            "region": "NORTH",
+            "best_seasons": ["spring", "summer"],
+            "budget_min": "MEDIUM",
+            "categories": ["طبیعت", "معماری", "روستایی"],
+            "suitable_for": ["COUPLE", "FAMILY", "pHOTOGRAPHY"],
+            "highlights": ["معماری پلکانی", "بازار سنتی", "آبشار"],
+            "description": "ماسوله، شهرک تاریخی پلکانی در دل جنگل‌های مه آلود گیلان.",
+            "estimated_cost_3days": {"ECONOMY": 1600000, "MEDIUM": 2800000, "LUXURY": 5000000},
+            "images": []
+        },
+
+
+        # --- WEST ---
+        {
+            "city": "تبریز",
+            "province": "آذربایجان شرقی",
+            "region": "WEST",
+            "best_seasons": ["summer", "spring"],
+            "budget_min": "ECONOMY",
+            "categories": ["تاریخی", "خرید", "فرهنگی", "شیرینی"],
+            "suitable_for": ["FAMILY", "FRIENDS", "BUSINESS"],
+            "highlights": ["بازار تبریز", "ایل‌گلی", "موزه آذربایجان"],
+            "description": "تبریز شهر اولین‌ها، با بزرگترین بازار سرپوشیده جهان و شیرینی‌های بی‌نظیر.",
+            "estimated_cost_3days": {"ECONOMY": 1400000, "MEDIUM": 2400000, "LUXURY": 4500000},
+            "images": []
+        },
+        {
+            "city": "همدان",
+            "province": "همدان",
+            "region": "WEST",
+            "best_seasons": ["summer", "spring"],
+            "budget_min": "ECONOMY",
+            "categories": ["تاریخی", "طبیعت", "غار"],
+            "suitable_for": ["FAMILY", "FRIENDS"],
+            "highlights": ["غار علیصدر", "گنجنامه", "آرامگاه بوعلی"],
+            "description": "همدان پایتخت تاریخ و تمدن ایران، با غارهای شگفت‌انگیز و کتیبه‌های باستانی.",
+            "estimated_cost_3days": {"ECONOMY": 1300000, "MEDIUM": 2200000, "LUXURY": 4000000},
+            "images": []
+        },
+        {
+            "city": "کرمانشاه",
+            "province": "کرمانشاه",
+            "region": "WEST",
+            "best_seasons": ["spring", "summer"],
+            "budget_min": "ECONOMY",
+            "categories": ["تاریخی", "طبیعت", "غذا"],
+            "suitable_for": ["FRIENDS", "FAMILY", "SOLO"],
+            "highlights": ["طاق بستان", "بیستون", "تکیه معاون‌الملک"],
+            "description": "کرمانشاه گهواره تمدن، با آثار سنگی باشکوه و دنده کباب‌های معروف.",
+            "estimated_cost_3days": {"ECONOMY": 1200000, "MEDIUM": 2000000, "LUXURY": 3500000},
+            "images": []
+        },
+
+        # --- EAST ---
+        {
+            "city": "مشهد",
+            "province": "خراسان رضوی",
+            "region": "EAST",
+            "best_seasons": ["spring", "summer", "fall"],
+            "budget_min": "ECONOMY",
+            "categories": ["مذهبی", "زیارتی", "خرید", "تفریحی"],
+            "suitable_for": ["FAMILY", "COUPLE", "FRIENDS"],
+            "highlights": ["حرم امام رضا", "شاندیز", "پارک آبی"],
+            "description": "مشهد مقدس، پایتخت معنوی ایران با امکانات اقامتی و تفریحی بی‌نظیر.",
+            "estimated_cost_3days": {"ECONOMY": 1200000, "MEDIUM": 2000000, "LUXURY": 4000000},
+            "images": []
+        },
+        {
+            "city": "کرمان",
+            "province": "کرمان",
+            "region": "EAST", # or SOUTH EAST, putting in EAST for simplicity
+            "best_seasons": ["spring", "fall", "winter"],
+            "budget_min": "ECONOMY",
+            "categories": ["تاریخی", "کویری", "طبیعت"],
+            "suitable_for": ["SOLO", "FRIENDS", "COUPLE"],
+            "highlights": ["باغ شازده", "کویر لوت", "مجموعه گنجعلی‌خان"],
+            "description": "کرمان دیار کریمان، با گرمترین نقطه زمین و باغ‌های جادویی در دل کویر.",
+            "estimated_cost_3days": {"ECONOMY": 1300000, "MEDIUM": 2100000, "LUXURY": 3800000},
             "images": []
         }
     ]
@@ -1445,6 +1583,10 @@ def _generate_destination_suggestions(
         score = 0
         reasons = []
 
+        # 0. فیلتر منطقه (اگر مشخص شده باشد) - Hard Filter
+        if region and region != dest.get("region"):
+            continue
+
         # 1. فصل مناسب (+30)
         if season in dest["best_seasons"]:
             score += 30
@@ -1454,7 +1596,7 @@ def _generate_destination_suggestions(
                 "fall": "پاییز",
                 "winter": "زمستان"
             }
-            reasons.append(f"فصل {season_names[season]} برای این مقصد عالی است")
+            reasons.append(f"هوابی عالی در {season_names[season]}")
 
         # 2. سبک سفر (+25)
         if travel_style in dest["suitable_for"]:
@@ -1466,28 +1608,33 @@ def _generate_destination_suggestions(
                 "FRIENDS": "با دوستان",
                 "BUSINESS": "کاری"
             }
-            reasons.append(f"مناسب برای سفر {style_names[travel_style]}")
+            reasons.append(f"مناسب سفر {style_names[travel_style]}")
 
         # 3. تطبیق علایق (+15 برای هر تطبیق)
         interest_matches = 0
         for interest in interests:
-            if interest in dest["categories"]:
+            # Simple substring checking or exact match
+            if any(interest in cat for cat in dest["categories"]):
                 interest_matches += 1
                 score += 15
 
         if interest_matches > 0:
-            reasons.append(f"دارای {interest_matches} جاذبه مورد علاقه شما")
+            reasons.append(f"{interest_matches} مورد جاذبه‌های مورد علاقه")
 
         # 4. بودجه (+20 اگر مناسب باشد)
         budget_order = ["ECONOMY", "MEDIUM", "LUXURY", "UNLIMITED"]
-        dest_budget_idx = budget_order.index(dest["budget_min"])
-        user_budget_idx = budget_order.index(budget_level)
+        try:
+            dest_budget_idx = budget_order.index(dest["budget_min"])
+            user_budget_idx = budget_order.index(budget_level)
 
-        if user_budget_idx >= dest_budget_idx:
-            score += 20
-            reasons.append("در محدوده بودجه شما")
-        else:
-            score -= 30  # جریمه برای گران‌تر بودن
+            if user_budget_idx >= dest_budget_idx:
+                score += 20
+                if user_budget_idx == dest_budget_idx:
+                    reasons.append("کاملاً متناسب با بودجه شما")
+            else:
+                score -= 30  # جریمه برای گران‌تر بودن
+        except ValueError:
+             score += 10 # Default behavior if budget data invalid
 
         # 5. امتیاز پایه (+10)
         score += 10
@@ -1499,19 +1646,20 @@ def _generate_destination_suggestions(
                 "province": dest["province"],
                 "score": score,
                 "reason": " | ".join(reasons[:2]),  # 2 دلیل اصلی
-                "highlights": dest["highlights"][:3],
+                "highlights": dest["highlights"],
                 "best_season": dest["best_seasons"][0],
-                "estimated_cost": str(dest["estimated_cost_3days"].get(budget_level, 0)),
+                "estimated_cost": str(dest["estimated_cost_3days"].get(budget_level, dest["estimated_cost_3days"]["MEDIUM"])),
                 "duration_days": 3,
                 "description": dest["description"],
                 "images": dest["images"],
-                "categories": dest["categories"]
+                "categories": dest["categories"],
+                "region": dest["region"]
             })
 
     # مرتب‌سازی بر اساس امتیاز
     scored_destinations.sort(key=lambda x: x["score"], reverse=True)
 
-    # برگرداندن 3 مقصد برتر
+    # برگرداندن 3 مقصد برتر (یا کمتر اگر پیدا نشد)
     return scored_destinations[:3]
 
 
