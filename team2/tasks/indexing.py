@@ -2,8 +2,7 @@ import logging
 
 from celery import shared_task
 from django.conf import settings
-
-logger = logging.getLogger(__name__)
+from team2.models import Version
 
 INDEX_NAME = "articles"
 _ES = None
@@ -19,8 +18,6 @@ def _get_es():
 
 @shared_task(bind=True, max_retries=2, default_retry_delay=10)
 def index_article_version(self, results, version_name):
-    from team2.models import Version
-
     version = Version.objects.get(name=version_name)
     body = {
         "article_name": version.article.name,
@@ -33,7 +30,6 @@ def index_article_version(self, results, version_name):
     try:
         _get_es().index(index=INDEX_NAME, id=version.name, document=body)
     except Exception as exc:
-        logger.warning("index_article_version failed for %s: %s", version_name, exc)
         raise self.retry(exc=exc)
 
 

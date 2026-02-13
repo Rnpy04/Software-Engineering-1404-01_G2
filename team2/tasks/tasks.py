@@ -4,8 +4,8 @@ import sys
 
 from celery import shared_task
 from django.conf import settings
-
-logger = logging.getLogger(__name__)
+from team2.models import Article, Tag, Version
+from team2.models import Article, Version
 
 MODEL_NAME = "gemini-2.5-flash"
 _CLIENT = None
@@ -21,8 +21,6 @@ def _get_client():
 
 @shared_task(bind=True, max_retries=2, default_retry_delay=10)
 def tag_article(self, article_name):
-    from team2.models import Article, Tag, Version
-
     article = Article.objects.get(name=article_name)
     version_name = article.current_version
     if version_name is None:
@@ -74,7 +72,6 @@ ARTICLE:
         selected_existing = data.get("selected_existing_tags", [])
         new_tags = data.get("new_tags", [])
     except Exception as exc:
-        logger.warning("tag_article failed for %s: %s", article_name, exc)
         raise self.retry(exc=exc)
 
     for tag_name in selected_existing:
@@ -96,8 +93,6 @@ ARTICLE:
 
 @shared_task(bind=True, max_retries=2, default_retry_delay=10)
 def summarize_article(self, article_name):
-    from team2.models import Article, Version
-
     article = Article.objects.get(name=article_name)
     version_name = article.current_version
 
@@ -123,7 +118,6 @@ ARTICLE:
     try:
         response = _get_client().models.generate_content(model=MODEL_NAME, contents=prompt)
     except Exception as exc:
-        logger.warning("summarize_article failed for %s: %s", article_name, exc)
         raise self.retry(exc=exc)
 
     summary = response.text.strip()

@@ -7,7 +7,6 @@ from django.shortcuts import redirect, get_object_or_404
 from django.db import transaction
 from rest_framework import status
 
-logger = logging.getLogger(__name__)
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -185,24 +184,14 @@ def publish_version(request, version_name):
 @authentication_classes(AUTH_CLASSES)
 @permission_classes(PERM_CLASSES)
 def my_articles(request):
-    t0 = time.time()
-    logger.warning("[my_articles] START user_id=%s", request.user.id)
-
-    t1 = time.time()
     articles = Article.objects.filter(
         creator_id=request.user.id
     ).select_related('current_version').prefetch_related('versions')
     article_list = list(articles)
-    t2 = time.time()
-    logger.warning("[my_articles] DB query: %.3fs, found %d articles", t2 - t1, len(article_list))
 
-    t3 = time.time()
     data = ArticleSerializer(article_list, many=True).data
-    t4 = time.time()
-    logger.warning("[my_articles] Serialization: %.3fs", t4 - t3)
 
     resp = Response(data)
-    logger.warning("[my_articles] TOTAL: %.3fs", time.time() - t0)
     return resp
 
 
@@ -239,26 +228,17 @@ def create_empty_version(request):
 @authentication_classes(AUTH_CLASSES)
 @permission_classes(PERM_CLASSES)
 def search_articles(request):
-    t0 = time.time()
-    logger.warning("[search_articles] START")
-
     query = request.GET.get("q", "").strip()
     if not query:
         return Response({"detail": "Query missing"}, status=400)
 
-    t1 = time.time()
-    logger.warning("[search_articles] Calling ES for query=%r", query)
     try:
         results = search_articles_semantic(query)
     except Exception as e:
-        logger.warning("[search_articles] ES error after %.3fs: %s", time.time() - t1, e)
         return Response(
             {"detail": f"Search service unavailable: {e}"},
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
-    t2 = time.time()
-    logger.warning("[search_articles] ES query: %.3fs, %d results", t2 - t1, len(results))
 
     resp = Response({"query": query, "results": results})
-    logger.warning("[search_articles] TOTAL: %.3fs", time.time() - t0)
     return resp
