@@ -24,8 +24,17 @@ services:
   #   command: ["-port=3000"]
   #   networks:
   #     - app404
-
+  backend:
+    build: .
+    env_file:
+      - .env  # این خط باعث می‌شود TEAM6_DATABASE_URL خوانده شود
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # اجازه اتصال به دیتابیس ویندوز
+    networks:
+      - app404
 networks:
   app404:
     external: true
     name: app404_net
+
+    
