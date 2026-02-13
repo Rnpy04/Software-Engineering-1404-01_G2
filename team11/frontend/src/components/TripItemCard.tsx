@@ -5,8 +5,8 @@ interface TripItemCardProps {
     item: TripItem;
     width: number;
     maxWidth?: number;
-    onDelete: (itemId: string) => void;
-    onSuggestAlternative: (itemId: string) => void;
+    onDelete: (itemId: number) => void;
+    onSuggestAlternative: (itemId: number) => void;
 }
 
 const TripItemCard: React.FC<TripItemCardProps> = ({

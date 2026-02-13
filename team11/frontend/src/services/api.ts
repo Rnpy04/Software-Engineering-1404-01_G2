@@ -33,7 +33,7 @@ api.interceptors.request.use(
 );
 
 export const destinationApi = {
-    suggest: (data: any) => api.post('/destinations', data),
+    suggest: (data: any) => api.post('/destinations/suggest', data),
 };
 
 export const tripApi = {
@@ -42,15 +42,15 @@ export const tripApi = {
         api.post('/trips/', data),
 
     // 2. Get Trip Timeline (Full Details)
-    getById: (tripId: string): Promise<AxiosResponse<Trip>> => 
+    getById: (tripId: number): Promise<AxiosResponse<Trip>> => 
         api.get(`/trips/${tripId}/`),
 
     // 3. Update Trip
-    update: (tripId: string, data: UpdateTripPayload): Promise<AxiosResponse<Trip>> => 
+    update: (tripId: number, data: UpdateTripPayload): Promise<AxiosResponse<Trip>> => 
         api.patch(`/trips/${tripId}/`, data),
 
     // 4. Delete Trip
-    delete: (tripId: string): Promise<AxiosResponse<void>> => 
+    delete: (tripId: number): Promise<AxiosResponse<void>> => 
         api.delete(`/trips/${tripId}/`),
 
     // 5. Get Trip History
@@ -58,21 +58,21 @@ export const tripApi = {
         api.get('/trips/history/'),
 
     // 6. Claim Guest Trip
-    claim: (tripId: string): Promise<AxiosResponse<{ message: string; trip: Trip }>> => 
+    claim: (tripId: number): Promise<AxiosResponse<{ message: string; trip: Trip }>> => 
         api.post(`/trips/${tripId}/claim/`),
 
     // 10. Get Cost Breakdown
-    getCostBreakdown: (tripId: string): Promise<AxiosResponse<CostBreakdownResponse>> => 
+    getCostBreakdown: (tripId: number): Promise<AxiosResponse<CostBreakdownResponse>> => 
         api.get(`/trips/${tripId}/cost_breakdown/`),
 
     // 11. Export Trip to PDF
-    exportPDF: (tripId: string): Promise<AxiosResponse<Blob>> => 
+    exportPDF: (tripId: number): Promise<AxiosResponse<Blob>> => 
         api.get(`/trips/${tripId}/export_pdf/`, {
             responseType: 'blob',
         }),
 
     // Helper function to download PDF
-    downloadPDF: async (tripId: string, filename?: string): Promise<void> => {
+    downloadPDF: async (tripId: number, filename?: string): Promise<void> => {
         const response = await tripApi.exportPDF(tripId);
         const url = window.URL.createObjectURL(response.data);
         const link = document.createElement('a');
@@ -85,21 +85,21 @@ export const tripApi = {
     },
 
     // Legacy aliases for backward compatibility
-    updateTrip: (tripId: string, data: UpdateTripPayload): Promise<AxiosResponse<Trip>> => 
+    updateTrip: (tripId: number, data: UpdateTripPayload): Promise<AxiosResponse<Trip>> => 
         api.patch(`/trips/${tripId}/`, data),
 };
 
 export const tripItemApi = {
     // 7. Update Item (Change Time)
-    update: (itemId: string, data: UpdateTripItemPayload): Promise<AxiosResponse<TripItem>> => 
+    update: (itemId: number, data: UpdateTripItemPayload): Promise<AxiosResponse<TripItem>> => 
         api.patch(`/items/${itemId}/`, data),
 
     // 8. Delete Item
-    delete: (itemId: string): Promise<AxiosResponse<void>> => 
+    delete: (itemId: number): Promise<AxiosResponse<void>> => 
         api.delete(`/items/${itemId}/`),
 
     // 9. Replace Item
-    replace: (itemId: string, data: ReplaceItemPayload): Promise<AxiosResponse<{
+    replace: (itemId: number, data: ReplaceItemPayload): Promise<AxiosResponse<{
         message: string;
         old_item: TripItem;
         new_item: TripItem;
@@ -109,7 +109,7 @@ export const tripItemApi = {
 
 export const tripDayApi = {
     // 12. Create Day in Trip
-    create: (tripId: string): Promise<AxiosResponse<TripDay>> => 
+    create: (tripId: number): Promise<AxiosResponse<TripDay>> => 
         api.post(`/trips/${tripId}/days/`),
 
     // 13. Bulk Create Items in Day

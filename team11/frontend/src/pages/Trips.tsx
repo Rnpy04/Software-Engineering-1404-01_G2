@@ -1,12 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/Button';
+import TripsContainer from '@/containers/trips/TripsContainer';
 
 const Trips: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="container mx-auto py-8">
+        <div className="container mx-auto py-8 px-4">
             <div className="flex items-center justify-center mb-6 relative w-full">
                 <div className="section-header !mb-0 text-center">
                     <h3 className="text-3xl font-black text-text-dark">سفرهای من</h3>
@@ -19,12 +20,7 @@ const Trips: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex items-center justify-center min-h-[50vh]">
-                <div className="text-center">
-                    <i className="fa-solid fa-suitcase-rolling text-persian-gold text-6xl mb-4"></i>
-                    <p className="text-text-dark text-lg">صفحه سفرها به زودی...</p>
-                </div>
-            </div>
+            <TripsContainer />
         </div>
     );
 };

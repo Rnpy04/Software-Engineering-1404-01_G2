@@ -15,7 +15,7 @@ import { calculateCategoryCosts, formatPersianCurrency } from '@/utils/costCalcu
 import { useNotification } from '@/contexts/NotificationContext';
 
 const FinalizeTrip: React.FC = () => {
-    const { tripId } = useParams<{ tripId: string }>();
+    const { tripId: tripIdParam } = useParams<{ tripId: string }>();
     const navigate = useNavigate();
     const { success, error: showError, warning } = useNotification();
     const { isAuthenticated, checkAuth, setUser } = useAuth();
@@ -39,6 +39,8 @@ const FinalizeTrip: React.FC = () => {
     const [isDialogLoading, setIsDialogLoading] = useState(false);
     const { data, isLoading, error, request } = useApi(tripApi.getById);
 
+    const tripId = Number(tripIdParam)
+
     useEffect(() => {
         if (tripId) {
             request(tripId);
@@ -52,7 +54,7 @@ const FinalizeTrip: React.FC = () => {
         }
     }, [data]);
 
-    const handleItemTimeChange = async (itemId: string, startTime: string, endTime: string) => {
+    const handleItemTimeChange = async (itemId: number, startTime: string, endTime: string) => {
         if (!tripId) return;
 
         try {
@@ -85,7 +87,7 @@ const FinalizeTrip: React.FC = () => {
         }
     };
 
-    const handleDeleteItem = async (itemId: string) => {
+    const handleDeleteItem = async (itemId: number) => {
         if (!tripId) return;
 
         setConfirmDialog({
@@ -123,7 +125,7 @@ const FinalizeTrip: React.FC = () => {
         });
     };
 
-    const handleSuggestAlternative = async (_itemId: string) => {
+    const handleSuggestAlternative = async (_itemId: number) => {
         if (!tripId) return;
 
         try {

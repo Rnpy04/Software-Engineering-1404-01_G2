@@ -8,9 +8,9 @@ interface TimelineProps {
     title: string;
     items: TripItemWithDay[];
     totalDays: number;
-    onItemTimeChange: (itemId: string, startTime: string, endTime: string) => void;
-    onDeleteItem: (itemId: string) => void;
-    onSuggestAlternative: (itemId: string) => void;
+    onItemTimeChange: (itemId: number, startTime: string, endTime: string) => void;
+    onDeleteItem: (itemId: number) => void;
+    onSuggestAlternative: (itemId: number) => void;
     color: string;
 }
 

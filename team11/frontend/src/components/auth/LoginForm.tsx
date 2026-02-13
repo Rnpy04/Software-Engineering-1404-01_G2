@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { authService } from '@/services/authApi';
 import translateError, { BackendRaw } from '@/services/errorTranslations';
 import { LoginFormData } from '@/types/auth';
+import { useAuth } from '@/context/AuthContext';
 
 interface LoginFormProps {
     onSuccess?: (user: any) => void;
@@ -14,6 +15,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
     onSwitchToSignup,
     showSwitchLink = true
 }) => {
+    const { setUser } = useAuth();
     const [formData, setFormData] = useState<LoginFormData>({
         email: '',
         password: '',
@@ -37,6 +39,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         try {
             const response = await authService.login(formData);
             if (response.data.ok && response.data.user) {
+                setUser(response.data.user); // Update global auth state
                 onSuccess?.(response.data.user);
             }
         } catch (err: unknown) {

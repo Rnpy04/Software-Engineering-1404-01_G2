@@ -6,75 +6,58 @@ export type ItemType = 'VISIT' | 'FOOD' | 'STAY' | 'TRANSPORT' | 'ACTIVITY';
 export type CategoryType = 'HISTORICAL' | 'SHOPPING' | 'RECREATIONAL' | 'RELIGIOUS' | 'NATURAL' | 'DINING' | 'STUDY' | 'EVENTS';
 
 export interface TripItem {
-  id: string;
-  item_id?: string;
+  id: number; // Changed to number as per API
   type: ItemType;
-  item_type?: ItemType;
-  place_ref_id?: string;
   title: string;
   category: CategoryType;
-  start_time: string;
-  end_time: string;
-  duration_minutes?: number;
-  summery?: string;
-  cost: number;
-  estimated_cost?: number;
-  address?: string;
-  url?: string | null;
-  order_index?: number;
-  is_locked?: boolean;
-  created_at?: string;
+  start_time: string; // snake_case for API response
+  end_time: string; // snake_case for API response
+  duration_minutes?: number; // Optional field
+  summery?: string; // Optional field
+  cost: number; // Float in API response
+  address?: string; // Optional field
+  url?: string | null; // Optional field
 }
 
 export interface TripDay {
-  day_id?: number;
   day_number: number;
-  day_index?: number;
   date: string;
-  specific_date?: string;
   items: TripItem[];
-  trip_id?: string;
-  created_at?: string;
 }
 
 export interface Trip {
-  id: string;
-  trip_id?: string;
-  title?: string;
+  id: number; // Changed to number as per API
+  title: string;
   province: string;
   city: string;
-  start_date: string;
-  end_date: string;
+  start_date: string; // snake_case for API response
+  end_date: string; // snake_case for API response
   duration_days: number;
-  style?: TripStyle;
-  travel_style?: TripStyle;
+  style: TripStyle;
   budget_level: BudgetLevel;
-  density?: string;
-  daily_available_hours?: number;
-  status?: TripStatus;
-  total_cost: number;
-  total_estimated_cost?: number;
+  density?: TripDensity; // Optional field
+  interests?: CategoryType[]; // Optional field
+  status: TripStatus; // Default is ACTIVE
+  total_cost: number; // Float in API response
   days: TripDay[];
-  user_id?: number | null;
-  created_at?: string;
+  created_at: string; // snake_case for API response
 }
 
 // API Payloads
 export interface CreateTripPayload {
   province: string;
-  city?: string | null;
-  start_date: string;
-  duration_days: number;
-  travel_style?: TripStyle;
-  budget_level?: BudgetLevel;
-  daily_available_hours?: number;
-  user_id?: number | null;
+  city: string;
+  startDate: string; // camelCase for API request
+  endDate?: string; // Optional field, camelCase for API request
+  style: TripStyle | null;
+  density?: TripDensity; // Optional field
+  interests?: CategoryType[]; // Optional field
+  budget_level: BudgetLevel | null;
 }
 
 export interface UpdateTripPayload {
-  title?: string;
   budget_level?: BudgetLevel;
-  daily_available_hours?: number;
+  density?: TripDensity; // Optional field
 }
 
 export interface UpdateTripItemPayload {
@@ -123,14 +106,18 @@ export interface CostBreakdownResponse {
 }
 
 export interface TripHistoryItem {
-  trip_id: string;
+  id: number;
   title: string;
   province: string;
   city: string;
   start_date: string;
   end_date: string;
-  duration_days: number;
-  total_estimated_cost: string;
+  style: string;
+  density?: string;
+  budget_level: string;
+  interests?: string[];
+  total_cost: number;
+  status: string;
   created_at: string;
 }
 

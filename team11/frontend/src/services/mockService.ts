@@ -183,3 +183,93 @@ export const getMockTrip = () => {
     }, 100);
   });
 };
+
+export const getMockTripHistory = () => {
+  return new Promise((resolve) => {
+    // Simulating network delay
+    setTimeout(() => {
+      resolve({
+        data: {
+          count: 5,
+          results: [
+            {
+              id: 1,
+              title: "سفر به اصفهان",
+              province: "اصفهان",
+              city: "اصفهان",
+              start_date: "2026-03-10",
+              end_date: "2026-03-12",
+              style: "family",
+              density: "balanced",
+              budget_level: "MEDIUM",
+              interests: ["historical", "dining"],
+              total_cost: 2050000.0,
+              status: "ACTIVE",
+              created_at: "2026-02-12T10:00:00+00:00"
+            },
+            {
+              id: 2,
+              title: "گردش در شمال",
+              province: "گیلان",
+              city: "رشت",
+              start_date: "2026-04-15",
+              end_date: "2026-04-18",
+              style: "couple",
+              density: "relaxed",
+              budget_level: "LUXURY",
+              interests: ["natural", "dining", "recreational"],
+              total_cost: 4500000.0,
+              status: "ACTIVE",
+              created_at: "2026-02-10T14:30:00+00:00"
+            },
+            {
+              id: 3,
+              title: "تور تاریخی شیراز",
+              province: "فارس",
+              city: "شیراز",
+              start_date: "2026-02-20",
+              end_date: "2026-02-23",
+              style: "friends",
+              density: "intensive",
+              budget_level: "ECONOMY",
+              interests: ["historical", "religious", "shopping"],
+              total_cost: 1200000.0,
+              status: "COMPLETED",
+              created_at: "2026-02-05T09:15:00+00:00"
+            },
+            {
+              id: 4,
+              title: "ماجراجویی در کویر",
+              province: "یزد",
+              city: "یزد",
+              start_date: "2026-05-01",
+              end_date: "2026-05-04",
+              style: "solo",
+              density: "balanced",
+              budget_level: "MEDIUM",
+              interests: ["natural", "historical", "study"],
+              total_cost: 1800000.0,
+              status: "ACTIVE",
+              created_at: "2026-02-08T16:45:00+00:00"
+            },
+            {
+              id: 5,
+              title: "سفر کاری تهران",
+              province: "تهران",
+              city: "تهران",
+              start_date: "2026-03-05",
+              end_date: "2026-03-07",
+              style: "business",
+              density: "intensive",
+              budget_level: "LUXURY",
+              interests: ["shopping", "dining"],
+              total_cost: 3200000.0,
+              status: "ACTIVE",
+              created_at: "2026-02-01T11:20:00+00:00"
+            }
+          ]
+        }
+      });
+    }, 800);
+  });
+};

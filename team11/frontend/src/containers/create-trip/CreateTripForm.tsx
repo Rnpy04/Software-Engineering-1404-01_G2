@@ -9,7 +9,7 @@ import DatePicker from '@/components/ui/DatePicker';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { tripApi } from '@/services/api';
 import { useNotification } from '@/contexts/NotificationContext';
-import { CreateTripPayload, TripStyle, BudgetLevel } from '@/types/trip';
+import { CreateTripPayload, TripStyle, BudgetLevel, TripDensity } from '@/types/trip';
 
 const PROVINCES = Object.values(PROVINCES_DETAILS).map((prov) => ({ value: prov.province, label: prov.name }));
 
@@ -117,31 +117,32 @@ const CreateTripForm = () => {
         durationDays = formData.endDate.diff(formData.startDate, 'days') + 1;
       }
 
-      // Map density to daily_available_hours
-      const densityHoursMap: { [key: string]: number } = {
-        'RELAXED': 6,
-        'BALANCED': 8,
-        'INTENSIVE': 10,
+      // Map density to TripDensity
+      const densityMap: { [key: string]: TripDensity } = {
+        'RELAXED': 'RELAXED',
+        'BALANCED': 'BALANCED',
+        'INTENSIVE': 'INTENSIVE',
       };
 
       // Build payload based on mode
       const payload: CreateTripPayload = {
         province: formData.province,
-        city: formData.city || undefined,
-        start_date: startDate,
-        duration_days: durationDays,
+        city: formData.city || '', // Ensure city is a string
+        startDate: startDate, // camelCase for API request
+        style: null,
+        budget_level: null
       };
 
       // Add advanced fields only in pro mode
       if (mode === 'pro') {
         if (formData.style) {
-          payload.travel_style = formData.style as TripStyle;
+          payload.style = formData.style as TripStyle; // Updated to match API
         }
         if (formData.budget) {
           payload.budget_level = formData.budget as BudgetLevel;
         }
         if (formData.density) {
-          payload.daily_available_hours = densityHoursMap[formData.density] || 8;
+          payload.density = densityMap[formData.density]; // Map density to TripDensity
         }
       }
 
@@ -150,15 +151,11 @@ const CreateTripForm = () => {
       // Call API
       const response = await tripApi.create(payload);
       const trip = response.data;
-
-      success('برنامه سفر با موفقیت ایجاد شد');
-
-      // Navigate to finalize trip page
-      navigate(`/finalize-trip/${trip.trip_id || trip.id}`);
+      success('سفر با موفقیت ایجاد شد');
+      navigate(`/finalize-trip/${trip.id}`);
     } catch (err: any) {
       console.error('Failed to create trip:', err);
-      const errorMessage = err.response?.data?.error || 'خطا در ایجاد برنامه سفر. لطفاً دوباره تلاش کنید.';
-      showError(errorMessage);
+      showError('خطا در ایجاد سفر. لطفاً دوباره تلاش کنید.');
     } finally {
       setIsCreating(false);
     }
