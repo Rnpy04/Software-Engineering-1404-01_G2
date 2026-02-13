@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Edit3, ArrowRight, Loader2 } from 'lucide-react'
+import { Edit3, ArrowRight, Loader2, ThumbsUp, ThumbsDown } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { api } from '../api'
@@ -10,6 +10,8 @@ export default function ArticlePage() {
   const [article, setArticle] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [voteLoading, setVoteLoading] = useState(false)
+  const [message, setMessage] = useState('')
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -26,6 +28,20 @@ export default function ArticlePage() {
     }
     fetchArticle()
   }, [name])
+
+  const handleVote = async (value) => {
+    setVoteLoading(true)
+    setMessage('')
+    try {
+      const data = await api.vote(name, value)
+      setArticle((prev) => ({ ...prev, score: data.score }))
+      setMessage(`رأی ثبت شد! امتیاز: ${data.score}`)
+    } catch (err) {
+      setMessage(err.data?.detail || 'خطا در ثبت رأی.')
+    } finally {
+      setVoteLoading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -64,6 +80,27 @@ export default function ArticlePage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-light rounded-lg px-3 py-2 border border-gray-200">
+            <button
+              onClick={() => handleVote(1)}
+              disabled={voteLoading}
+              className="text-forest hover:text-leaf disabled:opacity-50 transition-colors p-1"
+              title="رأی مثبت"
+            >
+              <ThumbsUp className="w-5 h-5" />
+            </button>
+            <span className="text-dark font-bold min-w-[2rem] text-center">
+              {article.score}
+            </span>
+            <button
+              onClick={() => handleVote(-1)}
+              disabled={voteLoading}
+              className="text-red-500 hover:text-red-400 disabled:opacity-50 transition-colors p-1"
+              title="رأی منفی"
+            >
+              <ThumbsDown className="w-5 h-5" />
+            </button>
+          </div>
           <Link
             to={`/articles/${encodeURIComponent(name)}/manage`}
             className="inline-flex items-center gap-1.5 bg-forest hover:bg-leaf text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
@@ -110,6 +147,12 @@ export default function ArticlePage() {
           )}
         </div>
       </div>
+
+      {message && (
+        <div className="mt-4 bg-white border border-gray-200 rounded-lg p-3 text-sm text-center text-gray-700 shadow-sm">
+          {message}
+        </div>
+      )}
 
       <footer className="border-t border-gray-300 mt-8 pt-6 text-center">
         <a

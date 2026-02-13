@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ThumbsUp, ThumbsDown, GitBranch, Eye, Edit3, ArrowRight, Loader2, Plus, Send, Inbox, ClipboardList } from 'lucide-react'
+import { GitBranch, Eye, Edit3, ArrowRight, Loader2, Plus, Send, Inbox, ClipboardList } from 'lucide-react'
 import { api } from '../api'
 
 export default function ManageArticlePage() {
@@ -9,7 +9,6 @@ export default function ManageArticlePage() {
   const [article, setArticle] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [voteLoading, setVoteLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [newVersionSource, setNewVersionSource] = useState('')
   const [newVersionName, setNewVersionName] = useState('')
@@ -46,20 +45,6 @@ export default function ManageArticlePage() {
   }, [name])
 
   const isCreator = currentUserId && article && String(article.creator_id) === String(currentUserId)
-
-  const handleVote = async (value) => {
-    setVoteLoading(true)
-    setMessage('')
-    try {
-      const data = await api.vote(name, value)
-      setArticle((prev) => ({ ...prev, score: data.score }))
-      setMessage(`رأی ثبت شد! امتیاز: ${data.score}`)
-    } catch (err) {
-      setMessage(err.data?.detail || 'خطا در ثبت رأی.')
-    } finally {
-      setVoteLoading(false)
-    }
-  }
 
   const handlePublish = async (versionName) => {
     setPublishLoading(versionName)
@@ -187,27 +172,6 @@ export default function ManageArticlePage() {
                   درخواست‌های من
                 </Link>
               )}
-              <div className="flex items-center gap-1 bg-light rounded-lg px-3 py-2 border border-gray-200">
-                <button
-                  onClick={() => handleVote(1)}
-                  disabled={voteLoading}
-                  className="text-forest hover:text-leaf disabled:opacity-50 transition-colors p-1"
-                  title="رأی مثبت"
-                >
-                  <ThumbsUp className="w-5 h-5" />
-                </button>
-                <span className="text-dark font-bold min-w-[2rem] text-center">
-                  {article.score}
-                </span>
-                <button
-                  onClick={() => handleVote(-1)}
-                  disabled={voteLoading}
-                  className="text-red-500 hover:text-red-400 disabled:opacity-50 transition-colors p-1"
-                  title="رأی منفی"
-                >
-                  <ThumbsDown className="w-5 h-5" />
-                </button>
-              </div>
             </div>
           </div>
         </div>
