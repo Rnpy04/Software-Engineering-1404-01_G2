@@ -52,7 +52,7 @@ urlpatterns = [
     path("notifications/mark-all-read/", mark_all_read, name="mark_all_read"),
     path("notifications/archive-all/", archive_all_notifications, name="archive_all_notifications"),
     path('drafts/', views.draft_list, name='draft_list'),
-    path(r'article/(?P<slug>[^/]+)/rollback/<int:revision_no>/', views.rollback_revision, name='rollback'),
+    re_path(r'^article/(?P<slug>[^/]+)/rollback/(?P<revision_no>\d+)/$', views.rollback_revision, name='rollback'),
 ]
 
 
