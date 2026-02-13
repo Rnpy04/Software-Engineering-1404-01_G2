@@ -378,7 +378,7 @@ const FinalizeTrip: React.FC = () => {
                 {visitItems.length === 0 && stayItems.length === 0 && (
                     <div className="text-center py-12 text-gray-500">
                         <i className="fa-solid fa-calendar-xmark text-4xl mb-4"></i>
-                        <p>هنوز برنامه‌ای برای این سفر تعریف نشده است.</p>
+                        <p>برنامه‌ای برای این سفر تعریف نشده است.</p>
                     </div>
                 )}
             </div>

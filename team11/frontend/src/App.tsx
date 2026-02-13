@@ -28,7 +28,7 @@ function App() {
             <Route index element={<HomePage />} />
             <Route path="create-trip" element={<CreateTrip />} />
             <Route path="suggest-destination" element={<SuggestDestination />} />
-            <Route path="finalize-trip/:tripId" element={<FinalizeTrip />} />
+            <Route path="trip-details/:tripId" element={<FinalizeTrip />} />
             <Route path="trips" element={<Trips />} />
           </Route>
 

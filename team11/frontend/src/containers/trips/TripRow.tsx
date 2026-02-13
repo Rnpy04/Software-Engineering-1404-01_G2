@@ -193,7 +193,7 @@ const TripRow: React.FC<TripRowProps> = ({ trip, onDelete, onExportPDF }) => {
                 {/* Created Date Footer */}
                 <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-mountain-grey/60">
                     <span>ایجاد شده در: {formatDate(trip.created_at)}</span>
-                    <Link to={`/finalize-trip/${trip.id}`}>
+                    <Link to={`/trip-details/${trip.id}`}>
                         <span className="text-tile-cyan hover:text-persian-gold transition-colors">
                             کلیک برای مشاهده جزئیات <i className="fa-solid fa-arrow-left mr-1"></i>
                         </span>

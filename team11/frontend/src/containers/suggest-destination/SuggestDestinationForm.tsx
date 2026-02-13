@@ -116,7 +116,7 @@ const SuggestDestinationForm = () => {
     };
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-10">
+        <div className="w-full max-w-5xl mx-auto p-8">
             {/* Header */}
             <div className="flex items-center justify-center mb-16 relative w-full">
                 <div className="section-header !mb-0 text-center">

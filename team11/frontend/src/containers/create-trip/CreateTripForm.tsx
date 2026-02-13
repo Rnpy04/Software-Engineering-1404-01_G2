@@ -152,7 +152,7 @@ const CreateTripForm = () => {
       const response = await tripApi.create(payload);
       const trip = response.data;
       success('سفر با موفقیت ایجاد شد');
-      navigate(`/finalize-trip/${trip.id}`);
+      navigate(`/trip-details/${trip.id}`);
     } catch (err: any) {
       console.error('Failed to create trip:', err);
       showError('خطا در ایجاد سفر. لطفاً دوباره تلاش کنید.');
@@ -168,7 +168,7 @@ const CreateTripForm = () => {
   const hasAdvancedField = selectedInterestValues.length > 0 || formData.style || formData.budget || formData.density
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-10">
+    <div className="w-full max-w-5xl mx-auto p-8">
       {/* Header */}
       <div className="flex items-center justify-center mb-16 relative w-full">
         <div className="section-header !mb-0 text-center">
