@@ -178,6 +178,9 @@ python manage.py load_category
 ```powershell
 python manage.py load_hotels
 ```
+‍‍‍```powershell
+python manage.py load_hospitals
+```
 
 
 
