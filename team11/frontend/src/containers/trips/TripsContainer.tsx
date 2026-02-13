@@ -9,7 +9,7 @@ import { getMockTripHistory } from '@/services/mockService';
 
 const TripsContainer: React.FC = () => {
     const { success, error: showError } = useNotification();
-    const { data, isLoading, error, request } = useApi(getMockTripHistory);
+    const { data, isLoading, error, request } = useApi(tripApi.getHistory);
     const [trips, setTrips] = useState<TripHistoryItem[]>([]);
     const [sortBy, setSortBy] = useState<'start_date' | 'total_cost' | null>(null);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -53,7 +53,7 @@ const TripsContainer: React.FC = () => {
 
         return [...trips].sort((a, b) => {
             let compareValue = 0;
-            
+
             if (sortBy === 'start_date') {
                 compareValue = new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
             } else if (sortBy === 'total_cost') {
@@ -162,17 +162,16 @@ const TripsContainer: React.FC = () => {
                     <p className="text-mountain-grey text-sm">
                         <span className="font-bold text-persian-blue">{trips.length}</span> سفر یافت شد
                     </p>
-                    
+
                     {/* Sort Options */}
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-mountain-grey">مرتب‌سازی:</span>
                         <button
                             onClick={() => handleSort('start_date')}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                                sortBy === 'start_date'
-                                    ? 'bg-persian-blue text-white'
-                                    : 'bg-gray-100 text-mountain-grey hover:bg-gray-200'
-                            }`}
+                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${sortBy === 'start_date'
+                                ? 'bg-persian-blue text-white'
+                                : 'bg-gray-100 text-mountain-grey hover:bg-gray-200'
+                                }`}
                         >
                             تاریخ شروع
                             {sortBy === 'start_date' && (
@@ -181,11 +180,10 @@ const TripsContainer: React.FC = () => {
                         </button>
                         <button
                             onClick={() => handleSort('total_cost')}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                                sortBy === 'total_cost'
-                                    ? 'bg-persian-blue text-white'
-                                    : 'bg-gray-100 text-mountain-grey hover:bg-gray-200'
-                            }`}
+                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${sortBy === 'total_cost'
+                                ? 'bg-persian-blue text-white'
+                                : 'bg-gray-100 text-mountain-grey hover:bg-gray-200'
+                                }`}
                         >
                             قیمت
                             {sortBy === 'total_cost' && (
