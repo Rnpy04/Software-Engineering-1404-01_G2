@@ -1,8 +1,8 @@
 """
-Facility Service Client - gRPC communication with Mohammad Hossein's service
+Facility Service Client - Communicates with Team 4's Facility Service (REST)
 """
-import grpc
 import logging
+import requests
 from typing import List, Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -10,26 +10,17 @@ logger = logging.getLogger(__name__)
 
 class FacilityClient:
     """
-    Client for communicating with Facility Service via gRPC
-
-    This service provides information about places, hotels, restaurants, and attractions.
+    Client for communicating with Facility Service via REST API (Team 4)
+    Fallback to mocks if configured or connection fails.
     """
 
-    def __init__(self, host: str = 'localhost', port: int = 50051):
-        self.host = host
-        self.port = port
-        self.channel = None
-        self.stub = None
-        self._connect()
-
-    def _connect(self):
-        """Establish gRPC connection"""
-        try:
-            self.channel = grpc.insecure_channel(f'{self.host}:{self.port}')
-            logger.info(f"Connected to Facility Service at {self.host}:{self.port}")
-        except Exception as e:
-            logger.error(f"Failed to connect to Facility Service: {e}")
-            self.stub = None
+    def __init__(self, base_url: str = 'http://localhost:8000/team4/api', use_mocks: bool = False):
+        self.base_url = base_url.rstrip('/')
+        self.use_mocks = use_mocks
+        if self.use_mocks:
+            logger.info("FacilityClient initializes in MOCK mode")
+        else:
+            logger.info(f"FacilityClient initialized with base_url: {self.base_url}")
 
     def search_places(
             self,
@@ -41,32 +32,85 @@ class FacilityClient:
     ) -> List[Dict]:
         """
         Search for places based on criteria
-
-        Returns list of places with: id, title, category, address, lat, lng,
-        entry_fee, price_tier, description, images, opening_hours, rating
+        Protocol: POST /facilities/search/
         """
-        if not self.stub:
+        if self.use_mocks:
             return self._get_mock_places(province, city, categories, limit)
 
         try:
-            # TODO: Implement actual gRPC call when ready
-            return self._get_mock_places(province, city, categories, limit)
+            # Prepare payload for Team 4 API
+            payload = {}
+            if province:
+                payload['province'] = province
+            if city:
+                payload['city'] = city
+            if categories:
+                # API accepts single category string, we might need to loop or pick first?
+                # The doc says "category": "string". If we have multiple, we might need multiple calls or just send one.
+                # For now, let's send the first one if available.
+                payload['category'] = categories[0]
 
-        except grpc.RpcError as e:
-            logger.error(f"gRPC error in search_places: {e}")
+            if budget_level:
+                # Map our budget levels to theirs if needed
+                # Ours: ECONOMY, MEDIUM, LUXURY
+                # Theirs: free, budget, moderate, expensive, luxury
+                budget_map = {
+                    'ECONOMY': 'budget',
+                    'MEDIUM': 'moderate',
+                    'LUXURY': 'luxury',
+                    'UNLIMITED': 'luxury'
+                }
+                payload['price_tier'] = budget_map.get(budget_level, 'moderate')
+
+            # Pagination
+            params = {'page': 1, 'page_size': limit}
+
+            response = requests.post(
+                f"{self.base_url}/facilities/search/",
+                json=payload,
+                params=params,
+                timeout=5
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            # Map response to our internal format
+            results = []
+            for item in data.get('results', []):
+                results.append(self._map_place_to_internal(item))
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Error in search_places: {e}. Falling back to mocks.")
             return self._get_mock_places(province, city, categories, limit)
 
     def get_place_by_id(self, place_id: str) -> Optional[Dict]:
         """Get detailed information about a specific place"""
-        if not self.stub:
+        if self.use_mocks:
             return self._get_mock_place(place_id)
 
         try:
-            # TODO: Implement actual gRPC call
+            # Assuming place_id is an integer for Team 4, but we use strings mostly.
+            # If our internal IDs are "place_001", we might need to handle that.
+            # Team 4 IDs are integers.
+            clean_id = place_id
+            if str(place_id).startswith('place_'):
+                 # It's a mock ID, fallback to mock
+                 return self._get_mock_place(place_id)
+
+            response = requests.get(
+                f"{self.base_url}/facilities/{clean_id}/",
+                timeout=5
+            )
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            return self._map_place_to_internal(response.json(), detailed=True)
+
+        except Exception as e:
+            logger.error(f"Error in get_place_by_id: {e}")
             return self._get_mock_place(place_id)
-        except grpc.RpcError as e:
-            logger.error(f"gRPC error in get_place_by_id: {e}")
-            return None
 
     def check_availability(
             self,
@@ -75,16 +119,72 @@ class FacilityClient:
             start_time: str,
             end_time: str
     ) -> Dict:
-        """Check if a place is available at a specific time"""
-        if not self.stub:
-            return {'is_available': True, 'reason': '', 'suggested_times': []}
+        """Check if a place is available (Mock only for now)"""
+        return {'is_available': True, 'reason': '', 'suggested_times': []}
 
-        try:
-            # TODO: Implement actual gRPC call
-            return {'is_available': True, 'reason': '', 'suggested_times': []}
-        except grpc.RpcError as e:
-            logger.error(f"gRPC error in check_availability: {e}")
-            return {'is_available': True, 'reason': '', 'suggested_times': []}
+    def _map_place_to_internal(self, item: Dict, detailed: bool = False) -> Dict:
+        """Map Team 4 API response to our internal dictionary format"""
+        # Team 4: fac_id, name_fa, category (string or obj), ...
+        
+        # Handle Category: could be string or object
+        category = "OTHER"
+        cat_raw = item.get('category')
+        if isinstance(cat_raw, dict):
+             cat_name = cat_raw.get('name_en', '').upper()
+        else:
+             cat_name = str(cat_raw).upper()
+        
+        # Simple mapping heuristics
+        if 'HOTEL' in cat_name or 'STAY' in cat_name: category = 'STAY'
+        elif 'RESTAURANT' in cat_name or 'DINING' in cat_name or 'CAFE' in cat_name: category = 'DINING'
+        elif 'PARK' in cat_name or 'NATURE' in cat_name: category = 'NATURAL'
+        elif 'MUSEUM' in cat_name or 'HISTORICAL' in cat_name: category = 'HISTORICAL'
+        elif 'MOSQUE' in cat_name or 'RELIGIOUS' in cat_name: category = 'RELIGIOUS'
+        
+        # Lat/Lng
+        lat, lng = 0.0, 0.0
+        loc = item.get('location')
+        if isinstance(loc, dict) and loc.get('coordinates'):
+            # GeoJSON is [lng, lat]
+            lng, lat = loc['coordinates']
+
+        # Price Tier
+        price_tier_map = {
+             'free': 'FREE', 'budget': 'BUDGET', 'moderate': 'MODERATE', 
+             'expensive': 'EXPENSIVE', 'luxury': 'LUXURY'
+        }
+        price_tier = price_tier_map.get(item.get('price_tier'), 'MODERATE')
+        
+        # Entry Fee
+        entry_fee = 0
+        price_info = item.get('price_from')
+        if isinstance(price_info, dict):
+             entry_fee = price_info.get('amount', 0)
+
+        # Images
+        images = []
+        if item.get('primary_image'):
+             images.append(item['primary_image'])
+        if detailed and item.get('images'):
+             for img in item.get('images', []):
+                  if isinstance(img, dict) and img.get('image_url'):
+                       images.append(img['image_url'])
+
+        return {
+            'id': str(item.get('fac_id')),
+            'title': item.get('name_fa'),
+            'category': category,
+            'address': item.get('address') or f"{item.get('city')} - {item.get('province')}",
+            'lat': lat,
+            'lng': lng,
+            'entry_fee': entry_fee,
+            'price_tier': price_tier,
+            'description': item.get('description_fa') or item.get('name_en'),
+            'images': images,
+            'opening_hours': {'24/7': item.get('is_24_hour', False)},
+            'rating': float(item.get('avg_rating') or 0),
+            'review_count': item.get('review_count', 0)
+        }
 
     def _get_mock_places(
             self,

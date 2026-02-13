@@ -1,3 +1,4 @@
+
 """
 Trip Generator - Main algorithm for creating trips
 """
