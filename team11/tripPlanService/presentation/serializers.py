@@ -254,8 +254,9 @@ class TripCreateUpdateSerializer(serializers.ModelSerializer):
 
         if end_date is None and start_date is not None:
             # Default to 3 days if end_date not provided
+            # duration = (end - start).days + 1, so for 3 days: end = start + 2
             from datetime import timedelta
-            end_date = start_date + timedelta(days=3)
+            end_date = start_date + timedelta(days=2)
             validated_data['end_date'] = end_date
 
         if start_date and end_date:
