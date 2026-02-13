@@ -7,8 +7,6 @@ services:
       - .env
     ports:
       - "8000:8000"
-#    volumes:
-#      - ./data:/app/
     networks:
       - app404
 
