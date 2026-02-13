@@ -77,13 +77,7 @@ class DestinationSuggester:
         for interest in interests:
             categories.extend(mapping.get(interest, []))
 
-        # Remove duplicates and always include DINING and STAY
         categories = list(set(categories))
-        if 'DINING' not in categories:
-            categories.append('DINING')
-        if 'STAY' not in categories:
-            categories.append('STAY')
-
         return categories
 
     def _filter_by_budget(self, places: List[Dict], budget_level: str) -> List[Dict]:

@@ -111,6 +111,7 @@ const CreateTripForm = () => {
     try {
       // Calculate duration_days
       const startDate = formData.startDate.format('YYYY-MM-DD');
+      const endDate = formData.endDate.format('YYYY-MM-DD');
       let durationDays = 1; // Default to 1 day
 
       if (formData.endDate) {
@@ -129,6 +130,7 @@ const CreateTripForm = () => {
         province: formData.province,
         city: formData.city || '', // Ensure city is a string
         startDate: startDate, // camelCase for API request
+        endDate: endDate,
         style: null,
         budget_level: null
       };

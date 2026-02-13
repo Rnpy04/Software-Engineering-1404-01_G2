@@ -2,13 +2,14 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
-import { tripApi, tripItemApi } from '@/services/api';
+import api, { tripApi, tripItemApi } from '@/services/api';
 import { getMockTrip } from '@/services/mockService';
-import { Trip, TripItemWithDay, BudgetLevel } from '@/types/trip';
+import { Trip, TripItemWithDay, BudgetLevel, AlternativePlace } from '@/types/trip';
 import Timeline from '@/components/Timeline';
 import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import AuthDialog from '@/components/auth/AuthDialog';
+import AlternativesDialog from '@/components/ui/AlternativesDialog';
 import TripSummary from '@/containers/finalize-trip/TripSummery';
 import { BUDGET_LEVELS } from '@/containers/suggest-destination/constants';
 import { calculateCategoryCosts, formatPersianCurrency } from '@/utils/costCalculations';
@@ -38,6 +39,19 @@ const FinalizeTrip: React.FC = () => {
     });
     const [isDialogLoading, setIsDialogLoading] = useState(false);
     const [claimSuccess, setClaimSuccess] = useState(false);
+    const [alternativesDialog, setAlternativesDialog] = useState<{
+        isOpen: boolean;
+        itemId: number | null;
+        currentPlaceTitle: string;
+        alternatives: AlternativePlace[];
+        isLoading: boolean;
+    }>({
+        isOpen: false,
+        itemId: null,
+        currentPlaceTitle: '',
+        alternatives: [],
+        isLoading: false,
+    });
     const { data, isLoading, error, request } = useApi(getMockTrip);
 
     const tripId = Number(tripIdParam)
@@ -126,42 +140,91 @@ const FinalizeTrip: React.FC = () => {
         });
     };
 
-    const handleSuggestAlternative = async (_itemId: number) => {
+    const handleSuggestAlternative = async (itemId: number) => {
         if (!tripId) return;
 
+        // Find the current item to get its title
+        let currentPlaceTitle = '';
+        if (tripData) {
+            for (const day of tripData.days) {
+                const item = day.items.find((i) => i.id === itemId);
+                if (item) {
+                    currentPlaceTitle = item.title;
+                    break;
+                }
+            }
+        }
+
+        // Open dialog with loading state
+        setAlternativesDialog({
+            isOpen: true,
+            itemId,
+            currentPlaceTitle,
+            alternatives: [],
+            isLoading: true,
+        });
+
         try {
-            // This would typically call an endpoint that suggests an alternative
-            // For now, we'll show a warning that this feature needs backend support
-            warning('این قابلیت نیازمند پشتیبانی سرویس پیشنهاد مکان است');
+            // Fetch alternatives
+            const response = await tripItemApi.getAlternatives(itemId, 5);
 
-            // When backend is ready, uncomment this:
-            // const response = await tripItemApi.replace(_itemId, {
-            //     new_place_id: 'suggested_place_id',
-            //     new_place_data: {
-            //         title: 'مکان جایگزین',
-            //         category: 'HISTORICAL',
-            //         estimated_cost: '0',
-            //     }
-            // });
-
-            // setTripData((prev) => {
-            //     if (!prev) return prev;
-            //     return {
-            //         ...prev,
-            //         days: prev.days.map((day) => ({
-            //             ...day,
-            //             items: day.items.map((item) =>
-            //                 item.id === _itemId ? response.data.new_item : item
-            //             ),
-            //         })),
-            //     };
-            // });
-
-            // success('آیتم جایگزین با موفقیت پیشنهاد شد');
+            // Update dialog with alternatives
+            setAlternativesDialog((prev) => ({
+                ...prev,
+                alternatives: response.data.alternatives || [],
+                isLoading: false,
+            }));
         } catch (err: any) {
-            console.error('Failed to suggest alternative:', err);
-            const errorMessage = err.response?.data?.error || 'خطا در پیشنهاد آیتم جایگزین. لطفاً دوباره تلاش کنید.';
+            console.error('Failed to fetch alternatives:', err);
+            const errorMessage = err.response?.data?.error || 'خطا در دریافت پیشنهادات جایگزین';
             showError(errorMessage);
+            setAlternativesDialog((prev) => ({
+                ...prev,
+                isLoading: false,
+            }));
+        }
+    };
+
+    const handleSelectAlternative = async (placeId: string) => {
+        if (!alternativesDialog.itemId) return;
+
+        setAlternativesDialog((prev) => ({ ...prev, isLoading: true }));
+
+        try {
+            // Call the replace API
+            const response = await tripItemApi.replace(alternativesDialog.itemId, {
+                new_place_id: placeId,
+            });
+
+            // Update local state with the new item
+            setTripData((prev) => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    days: prev.days.map((day) => ({
+                        ...day,
+                        items: day.items.map((item) =>
+                            item.id === alternativesDialog.itemId ? response.data.new_item : item
+                        ),
+                    })),
+                };
+            });
+
+            success('مکان جایگزین با موفقیت اعمال شد');
+
+            // Close the dialog
+            setAlternativesDialog({
+                isOpen: false,
+                itemId: null,
+                currentPlaceTitle: '',
+                alternatives: [],
+                isLoading: false,
+            });
+        } catch (err: any) {
+            console.error('Failed to replace item:', err);
+            const errorMessage = err.response?.data?.error || 'خطا در جایگزینی مکان';
+            showError(errorMessage);
+            setAlternativesDialog((prev) => ({ ...prev, isLoading: false }));
         }
     };
 
@@ -347,6 +410,22 @@ const FinalizeTrip: React.FC = () => {
                 isOpen={isAuthDialogOpen}
                 onClose={() => setIsAuthDialogOpen(false)}
                 onSuccess={handleAuthSuccess}
+            />
+
+            {/* Alternatives Dialog */}
+            <AlternativesDialog
+                isOpen={alternativesDialog.isOpen}
+                onClose={() => setAlternativesDialog({
+                    isOpen: false,
+                    itemId: null,
+                    currentPlaceTitle: '',
+                    alternatives: [],
+                    isLoading: false,
+                })}
+                alternatives={alternativesDialog.alternatives}
+                currentPlaceTitle={alternativesDialog.currentPlaceTitle}
+                onSelectAlternative={handleSelectAlternative}
+                isLoading={alternativesDialog.isLoading}
             />
 
             {/* Confirm Dialog or Success Dialog */}

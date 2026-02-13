@@ -13,6 +13,9 @@ from data.models import (
     ShareLink, Vote, TripReview, UserMedia
 )
 
+from externalServices.grpc.services.facility_client import FacilityClient
+from externalServices.grpc.services.recommendation_client import RecommendationClient
+from externalServices.grpc.services.wiki_client import WikiClient
 
 class TripService:
     """Business logic for Trip operations"""
@@ -497,3 +500,300 @@ class MediaService:
     def delete_media(media_id: int) -> bool:
         """Delete media"""
         return UserMediaRepository.delete(media_id)
+
+
+
+
+import logging
+
+# Import the mocked clients
+# Note: Place these files in your project and adjust import paths as needed
+
+logger = logging.getLogger(__name__)
+
+# Initialize mocked clients (singleton instances)
+recommendation_client = RecommendationClient(use_mocks=True)
+facility_client = FacilityClient(use_mocks=True)
+wiki_client = WikiClient()
+
+class SuggestionService:
+
+    @staticmethod
+    def generate_destination_suggestions(season, budget_level, travel_style, interests):
+        """
+        Generate destination suggestions using mocked clients
+
+        Args:
+            season: Persian season (بهار, تابستان, پاییز, زمستان)
+            budget_level: ECONOMY, MEDIUM, LUXURY, UNLIMITED
+            travel_style: SOLO, COUPLE, FAMILY, FRIENDS, BUSINESS
+            interests: List of Persian interest keywords
+
+        Returns:
+            List of destination suggestions with comprehensive details
+        """
+
+        # Map travel_style to Persian travel style for scoring
+        travel_style_map = {
+            'SOLO': 'ماجراجویی',
+            'COUPLE': 'خانوادگی',
+            'FAMILY': 'خانوادگی',
+            'FRIENDS': 'طبیعت',
+            'BUSINESS': 'شهری'
+        }
+
+        # If user has interests, use them; otherwise map from travel_style
+        effective_interests = interests if interests else [travel_style_map.get(travel_style, 'تاریخی')]
+
+        # If user has interests, use the first one as primary travel style
+        if interests and len(interests) > 0:
+            persian_travel_style = interests[0]
+        else:
+            persian_travel_style = travel_style_map.get(travel_style, 'تاریخی')
+
+        # Step 1: Get recommended regions from RecommendationClient
+        logger.info(
+            f"Getting region suggestions for season={season}, budget={budget_level}, interests={effective_interests}")
+        regions = recommendation_client.get_suggested_regions(
+            budget_limit=budget_level,
+            season=season,
+            interests=effective_interests
+        )
+
+        # Take top 3 regions
+        top_regions = regions[:3]
+
+        suggestions = []
+
+        for region in top_regions:
+            try:
+                province = region['province']
+
+                # Map interests to categories for better filtering
+                interest_to_categories = {
+                    'تاریخی': ['HISTORICAL', 'CULTURAL'],
+                    'فرهنگی': ['CULTURAL', 'HISTORICAL'],
+                    'طبیعت': ['NATURAL'],
+                    'خانوادگی': ['RECREATIONAL', 'NATURAL', 'DINING'],
+                    'مذهبی': ['RELIGIOUS'],
+                    'ماجراجویی': ['NATURAL', 'RECREATIONAL'],
+                    'شهری': ['CULTURAL', 'DINING', 'STAY'],
+                    'غذا': ['DINING']
+                }
+
+                # Get preferred categories based on interests
+                preferred_categories = []
+                if interests:
+                    for interest in interests:
+                        preferred_categories.extend(interest_to_categories.get(interest, []))
+
+                # Remove duplicates while preserving order
+                if preferred_categories:
+                    seen = set()
+                    preferred_categories = [x for x in preferred_categories if not (x in seen or seen.add(x))]
+
+                # Step 2: Get places in this region from FacilityClient
+                logger.info(f"Searching for places in {province} with categories {preferred_categories}")
+                places = facility_client.search_places(
+                    province=province,
+                    categories=preferred_categories if preferred_categories else None,
+                    budget_level=budget_level,
+                    limit=5
+                )
+
+                if not places:
+                    logger.warning(f"No places found for province: {province}")
+                    continue
+
+                # Step 3: Get highlights (top 2-3 attractions)
+                highlights = [place['title'] for place in places[:3]]
+
+                # Step 4: Calculate estimated cost based on budget level and places
+                estimated_cost = SuggestionService.calculate_estimated_cost(budget_level, places)
+
+                # Step 5: Determine recommended duration
+                duration_days = SuggestionService.calculate_duration(len(places))
+
+                # Step 6: Get description from WikiClient and region data
+                description = region.get('description', f"استان {province} یکی از مقاصد گردشگری محبوب ایران است.")
+                images = [region.get('image_url', 'https://example.com/placeholder.jpg')]
+
+                # Try to enrich with wiki data for the first place
+                if places:
+                    first_place_id = places[0]['id']
+                    wiki_info = wiki_client.get_place_info(first_place_id)
+                    if wiki_info and wiki_info.get('description'):
+                        # Combine region description with place description
+                        description = f"{region.get('description', '')} {wiki_info['description'][:150]}..."
+                        if wiki_info.get('images'):
+                            images.extend(wiki_info['images'][:2])
+
+                # Step 7: Generate reason based on interests and region characteristics
+                reason = SuggestionService.generate_reason(
+                    province=province,
+                    interests=interests,
+                    travel_style=persian_travel_style,
+                    places=places
+                )
+
+                # Step 8: Map season back to English for response
+                season_reverse_map = {
+                    'بهار': 'spring',
+                    'تابستان': 'summer',
+                    'پاییز': 'fall',
+                    'زمستان': 'winter'
+                }
+
+                best_seasons = region.get('best_seasons', [season])
+                best_season_english = season_reverse_map.get(
+                    best_seasons[0] if best_seasons else season,
+                    'spring'
+                )
+
+                # Build comprehensive suggestion
+                suggestion = {
+                    'city': province,  # Using province as main city
+                    'province': province,
+                    'score': region['match_score'],
+                    'reason': reason,
+                    'highlights': highlights,
+                    'best_season': best_season_english,
+                    'estimated_cost': str(estimated_cost),
+                    'duration_days': duration_days,
+                    'description': description,
+                    'images': images[:3]  # Limit to 3 images
+                }
+
+                suggestions.append(suggestion)
+
+            except Exception as e:
+                logger.error(f"Error processing region {region.get('region_name')}: {str(e)}", exc_info=True)
+                continue
+
+        return suggestions
+
+    @staticmethod
+    def calculate_estimated_cost(budget_level, places):
+        """
+        Calculate estimated trip cost based on budget level and places
+
+        Args:
+            budget_level: ECONOMY, MEDIUM, LUXURY, UNLIMITED
+            places: List of places with entry fees
+
+        Returns:
+            Estimated cost in Rials (integer)
+        """
+        # Base daily costs (accommodation + food + transport per day)
+        base_costs = {
+            'ECONOMY': 1_500_000,  # 1.5M Rials per day
+            'MEDIUM': 3_000_000,  # 3M Rials per day
+            'LUXURY': 6_000_000,  # 6M Rials per day
+            'UNLIMITED': 10_000_000  # 10M Rials per day
+        }
+
+        base_daily = base_costs.get(budget_level, 3_000_000)
+
+        # Add entry fees for top attractions
+        total_entry_fees = sum(place.get('entry_fee', 0) for place in places[:5])
+
+        # Estimate for 3 days (average trip)
+        total_cost = (base_daily * 3) + total_entry_fees
+
+        return int(total_cost)
+
+    @staticmethod
+    def calculate_duration(num_places):
+        """
+        Calculate recommended trip duration based on number of places
+
+        Args:
+            num_places: Number of places to visit
+
+        Returns:
+            Recommended number of days (integer)
+        """
+        if num_places <= 3:
+            return 2
+        elif num_places <= 6:
+            return 3
+        elif num_places <= 10:
+            return 4
+        else:
+            return 5
+
+    @staticmethod
+    def generate_reason(province, interests, travel_style, places):
+        """
+        Generate a personalized reason/recommendation text for the destination
+
+        Args:
+            province: Province name in Persian
+            interests: User interests (list of Persian keywords)
+            travel_style: User's travel style in Persian
+            places: List of places in the province
+
+        Returns:
+            Reason text in Persian (string)
+        """
+        # Count categories in places
+        categories = {}
+        for place in places:
+            cat = place.get('category', 'OTHER')
+            categories[cat] = categories.get(cat, 0) + 1
+
+        # Find dominant category
+        dominant_category = max(categories.items(), key=lambda x: x[1])[0] if categories else None
+
+        # Category to description mapping
+        category_descriptions = {
+            'HISTORICAL': 'با آثار تاریخی غنی',
+            'RELIGIOUS': 'با مکان‌های مذهبی معنوی',
+            'NATURAL': 'با طبیعت بکر و دیدنی',
+            'CULTURAL': 'با فرهنگ غنی و بازارهای سنتی',
+            'RECREATIONAL': 'با امکانات تفریحی متنوع',
+            'DINING': 'با غذاهای محلی متنوع',
+            'STAY': 'با امکانات اقامتی مناسب'
+        }
+
+        # Build reason
+        parts = [f"استان {province}"]
+
+        # Add category-based description
+        if dominant_category and dominant_category in category_descriptions:
+            parts.append(category_descriptions[dominant_category])
+
+        # Add interest-based reason
+        interest_map = {
+            'تاریخی': 'برای علاقه‌مندان به تاریخ و معماری',
+            'فرهنگی': 'برای علاقه‌مندان به فرهنگ و هنر',
+            'طبیعت': 'برای دوستداران طبیعت و کوهنوردی',
+            'خانوادگی': 'برای سفرهای خانوادگی',
+            'مذهبی': 'برای زیارت و سیاحت مذهبی',
+            'ماجراجویی': 'برای جویندگان ماجراجویی',
+            'شهری': 'برای تجربه زندگی شهری',
+            'غذا': 'برای تجربه غذاهای محلی'
+        }
+
+        if interests and len(interests) > 0:
+            interest_reason = interest_map.get(interests[0], '')
+            if interest_reason:
+                parts.append(interest_reason)
+        elif travel_style in interest_map:
+            parts.append(interest_map[travel_style])
+
+        # Add place count if significant
+        if len(places) >= 5:
+            parts.append(f'با بیش از {len(places)} جاذبه گردشگری')
+
+        reason = ' '.join(parts)
+
+        # Add quality endorsement based on average rating
+        if places:
+            avg_rating = sum(p.get('rating', 0) for p in places) / len(places)
+            if avg_rating >= 4.7:
+                reason += '. یکی از محبوب‌ترین مقاصد گردشگری ایران'
+            elif avg_rating >= 4.5:
+                reason += '. مقصدی عالی برای سفر'
+
+        return reason

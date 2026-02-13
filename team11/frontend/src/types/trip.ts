@@ -160,3 +160,33 @@ export interface TripItemWithDay extends TripItem {
   day_number: number;
   date: string;
 }
+
+// Item Alternatives API
+export interface AlternativePlace {
+  id: string;
+  title: string;
+  category: CategoryType;
+  address?: string;
+  lat?: number;
+  lng?: number;
+  entry_fee?: number;
+  price_tier?: 'FREE' | 'BUDGET' | 'MODERATE' | 'LUXURY';
+  rating?: number;
+  distance?: number;
+  recommendation_reason?: string;
+}
+
+export interface ItemAlternativesResponse {
+  success: boolean;
+  item_id: number;
+  current_place: {
+    place_id: string;
+    title: string;
+    category: CategoryType;
+    lat?: number;
+    lng?: number;
+    estimated_cost: number;
+  };
+  alternatives: AlternativePlace[];
+  count: number;
+}

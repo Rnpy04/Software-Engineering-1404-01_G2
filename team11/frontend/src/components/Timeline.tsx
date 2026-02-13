@@ -43,6 +43,7 @@ const Timeline: React.FC<TimelineProps> = ({
     const [visibleDay, setVisibleDay] = useState<number>(1);
     const [editingItemId, setEditingItemId] = useState<number | null>(null);
     const [pendingChanges, setPendingChanges] = useState<{ [key: number]: { startTime: string; endTime: string } }>({});
+    const [activeDragSectionIndex, setActiveDragSectionIndex] = useState<number | null>(null);
 
     // Helper functions
     const timeToMinutesFromTripStart = (time: string, dayNumber: number): number => {
@@ -94,6 +95,25 @@ const Timeline: React.FC<TimelineProps> = ({
             return; // Silently skip if lengths don't match (can happen during rapid updates)
         }
 
+        // First pass: detect which item is actually being changed in this event
+        let currentlyChangingItemId: number | null = null;
+        sections.forEach((section, index) => {
+            const item = items[index];
+            if (!item) return;
+
+            const numericId = typeof item.id === 'number' ? item.id : parseInt(String(item.id).replace(/\D/g, ''), 10);
+            if (isNaN(numericId)) return;
+
+            const currentStartTime = pendingChanges[numericId]?.startTime || item.start_time;
+            const currentEndTime = pendingChanges[numericId]?.endTime || item.end_time;
+            const currentStart = timeToMinutesFromTripStart(currentStartTime, item.day_number);
+            const currentEnd = timeToMinutesFromTripStart(currentEndTime, item.day_number);
+
+            if (section.start !== currentStart || section.end !== currentEnd) {
+                currentlyChangingItemId = numericId;
+            }
+        });
+
         sections.forEach((section, index) => {
             const item = items[index];
             if (!item) {
@@ -103,8 +123,9 @@ const Timeline: React.FC<TimelineProps> = ({
             const numericId = typeof item.id === 'number' ? item.id : parseInt(String(item.id).replace(/\D/g, ''), 10);
             if (isNaN(numericId)) return;
 
-            // If another item is being edited, prevent changes to this one
-            if (editingItemId !== null && editingItemId !== numericId) {
+            // Allow if: this is the item being changed right now OR this item has pending changes
+            const hasPendingChanges = pendingChanges[numericId] !== undefined;
+            if (currentlyChangingItemId !== null && currentlyChangingItemId !== numericId && !hasPendingChanges) {
                 return;
             }
 
@@ -166,6 +187,7 @@ const Timeline: React.FC<TimelineProps> = ({
             return newPending;
         });
         setEditingItemId(null);
+        setActiveDragSectionIndex(null);
     };
 
     // Cancel pending changes
@@ -179,6 +201,7 @@ const Timeline: React.FC<TimelineProps> = ({
             return newPending;
         });
         setEditingItemId(null);
+        setActiveDragSectionIndex(null);
     };
 
     // Memoized values
@@ -454,8 +477,16 @@ const Timeline: React.FC<TimelineProps> = ({
 
                             const time = params.isStartThumb ? startTime : endTime;
 
-                            // Check if this thumb should be disabled (another item is being edited)
-                            const isDisabled = editingItemId !== null && editingItemId !== numericId;
+                            // Track which section is being actively dragged
+                            if (params.isDragged && activeDragSectionIndex !== params.sectionIndex) {
+                                setActiveDragSectionIndex(params.sectionIndex);
+                                setEditingItemId(numericId);
+                            }
+
+                            // Disable if any section (this one or another) is being dragged/edited and this is a different section
+                            const isBeingDraggedOrEdited = activeDragSectionIndex !== null || editingItemId !== null;
+                            const isThisSectionActive = activeDragSectionIndex === params.sectionIndex || editingItemId === numericId;
+                            const isDisabled = isBeingDraggedOrEdited && !isThisSectionActive;
 
                             return (
                                 <div

@@ -14,7 +14,7 @@ from datetime import date, datetime
 from business.services import (
     TripService, TripDayService, TripItemService,
     DependencyService, ShareService, VotingService,
-    ReviewService, MediaService
+    ReviewService, MediaService,SuggestionService
 )
 from business.generators import TripGenerator
 from business.helpers import AlternativesProvider
@@ -1285,10 +1285,20 @@ def suggest_destinations(request):
     if not budget_level:
          budget_level = 'MEDIUM'
 
-    # اعتبارسنجی season
-    valid_seasons = ['spring', 'summer', 'fall', 'winter']
-    if season not in valid_seasons:
+    # Map English season to Persian
+    season_map = {
+        'spring': 'بهار',
+        'summer': 'تابستان',
+        'fall': 'پاییز',
+        'autumn': 'پاییز',
+        'winter': 'زمستان'
+    }
+
+    season_persian = season_map.get(season.lower(), 'بهار')
+    valid_seasons = ['spring', 'summer', 'fall', 'autumn', 'winter']
+    if season.lower() not in valid_seasons:
         season = 'spring'
+        season_persian = 'بهار'
 
     # اعتبارسنجی budget_level
     valid_budgets = ['ECONOMY', 'MEDIUM', 'LUXURY', 'UNLIMITED']
@@ -1302,8 +1312,8 @@ def suggest_destinations(request):
 
     try:
         # 2. پیشنهاد مقصدها بر اساس پارامترها
-        suggestions = _generate_destination_suggestions(
-            season=season,
+        suggestions = SuggestionService.generate_destination_suggestions(
+            season=season_persian,
             budget_level=budget_level,
             travel_style=travel_style,
             interests=interests,

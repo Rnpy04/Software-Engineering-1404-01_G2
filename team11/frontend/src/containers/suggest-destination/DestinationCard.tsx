@@ -73,11 +73,11 @@ const DestinationCard: React.FC<DestinationCardProps> = ({
             ))}
           </ul>
         </div>
-        {/* Categories */}
+        {/* Categories
         <div className="mb-2">
           <span className="font-bold text-xs">دسته‌بندی‌ها:</span>
-          <span className="text-xs text-mountain-grey ms-2">{categories.join(', ')}</span>
-        </div>
+          <span className="text-xs text-mountain-grey ms-2">{highlights.join(', ')}</span>
+        </div> */}
         {/* Removed Best Season, Score, Cost, Duration */}
 
         <div className='flex justify-end mt-auto items-center'>

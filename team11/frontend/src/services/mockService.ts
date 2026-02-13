@@ -273,3 +273,92 @@ export const getMockTripHistory = () => {
     }, 800);
   });
 };
+
+export const getMockItemAlternatives = (itemId: number) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        data: {
+          success: true,
+          item_id: itemId,
+          current_place: {
+            place_id: "place_001",
+            title: "میدان نقش جهان",
+            category: "HISTORICAL",
+            lat: 32.6546,
+            lng: 51.6777,
+            estimated_cost: 14000000
+          },
+          alternatives: [
+            {
+              id: "place_005",
+              title: "باغ چهلستون",
+              category: "HISTORICAL",
+              address: "اصفهان، خیابان استانداری",
+              lat: 32.6612,
+              lng: 51.6697,
+              entry_fee: 150000,
+              price_tier: "BUDGET",
+              rating: 4.6,
+              distance: 1.2,
+              recommendation_reason: "نزدیک‌ترین جاذبه مشابه"
+            },
+            {
+              id: "place_006",
+              title: "کاخ عالی‌قاپو",
+              category: "HISTORICAL",
+              address: "اصفهان، میدان نقش جهان، ضلع غربی",
+              lat: 32.6551,
+              lng: 51.6772,
+              entry_fee: 200000,
+              price_tier: "BUDGET",
+              rating: 4.8,
+              distance: 0.3,
+              recommendation_reason: "بالاترین امتیاز کاربران"
+            },
+            {
+              id: "place_007",
+              title: "مسجد جامع اصفهان",
+              category: "HISTORICAL",
+              address: "اصفهان، خیابان حاتم",
+              lat: 32.6720,
+              lng: 51.6854,
+              entry_fee: 0,
+              price_tier: "FREE",
+              rating: 4.5,
+              distance: 2.1,
+              recommendation_reason: "بازدید رایگان"
+            },
+            {
+              id: "place_008",
+              title: "کلیسای بیت‌اللحم",
+              category: "HISTORICAL",
+              address: "اصفهان، جلفا، خیابان نظر",
+              lat: 32.6375,
+              lng: 51.6514,
+              entry_fee: 100000,
+              price_tier: "BUDGET",
+              rating: 4.4,
+              distance: 2.5,
+              recommendation_reason: "مقرون‌به‌صرفه"
+            },
+            {
+              id: "place_009",
+              title: "کاخ هشت‌بهشت",
+              category: "HISTORICAL",
+              address: "اصفهان، خیابان چهارباغ عباسی",
+              lat: 32.6564,
+              lng: 51.6720,
+              entry_fee: 180000,
+              price_tier: "BUDGET",
+              rating: 4.3,
+              distance: 0.8,
+              recommendation_reason: "در فاصله 0.8 کیلومتری"
+            }
+          ],
+          count: 5
+        }
+      });
+    }, 600);
+  });
+};
