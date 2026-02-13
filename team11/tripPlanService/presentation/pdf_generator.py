@@ -378,10 +378,14 @@ def generate_html_content(trip: Trip) -> str:
             </div>
             <div class="metadata-row">
                 <div class="metadata-label">سطح بودجه:</div>
-                <div class="metadata-value">{density_display}</div>
+                <div class="metadata-value">{trip.get_budget_level_display() if trip.budget_level else '-'}</div>
             </div>
             <div class="metadata-row">
                 <div class="metadata-label">تراکم برنامه:</div>
+                <div class="metadata-value">{density_display}</div>
+            </div>
+            <div class="metadata-row">
+                <div class="metadata-label">سبک سفر:</div>
                 <div class="metadata-value">{trip.get_travel_style_display() if trip.travel_style else '-'}</div>
             </div>
             <div class="metadata-row">

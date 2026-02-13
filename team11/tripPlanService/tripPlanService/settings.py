@@ -27,7 +27,12 @@ SECRET_KEY = 'django-insecure-k0t33bo%ds2_w9g7i3!l6-b2qf7$eew%uw6+x2c-6i_8v(olc^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:9151',
+    'http://127.0.0.1:9151',
+]
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
@@ -145,6 +150,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

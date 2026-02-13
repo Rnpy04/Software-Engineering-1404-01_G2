@@ -61,7 +61,7 @@ class TripService:
 
     @staticmethod
     def copy_trip(trip_id: int, user_id: Optional[int] = None) -> Optional[Trip]:
-        """Create a copy of an existing trip"""
+        """Create a deep copy of an existing trip (including days and items)"""
         original = TripRepository.get_by_id(trip_id)
         if not original:
             return None
@@ -73,14 +73,54 @@ class TripService:
             'province': original.province,
             'city': original.city,
             'start_date': original.start_date,
+            'end_date': original.end_date,
             'duration_days': original.duration_days,
             'budget_level': original.budget_level,
             'daily_available_hours': original.daily_available_hours,
             'travel_style': original.travel_style,
             'generation_strategy': original.generation_strategy,
+            'density': original.density,
+            'interests': original.interests,
+            'total_estimated_cost': original.total_estimated_cost,
         }
 
-        return TripRepository.create(new_trip_data)
+        new_trip = TripRepository.create(new_trip_data)
+
+        # Deep copy: duplicate days and items
+        for day in original.days.all().order_by('day_index'):
+            new_day = TripDayRepository.create({
+                'trip_id': new_trip.trip_id,
+                'day_index': day.day_index,
+                'specific_date': day.specific_date,
+                'start_geo_location': day.start_geo_location,
+            })
+
+            for item in day.items.all().order_by('sort_order'):
+                TripItemRepository.create({
+                    'day_id': new_day.day_id,
+                    'item_type': item.item_type,
+                    'place_ref_id': item.place_ref_id,
+                    'title': item.title,
+                    'category': item.category,
+                    'address_summary': item.address_summary,
+                    'lat': item.lat,
+                    'lng': item.lng,
+                    'wiki_summary': item.wiki_summary,
+                    'wiki_link': item.wiki_link,
+                    'main_image_url': item.main_image_url,
+                    'start_time': item.start_time,
+                    'end_time': item.end_time,
+                    'duration_minutes': item.duration_minutes,
+                    'sort_order': item.sort_order,
+                    'is_locked': False,  # Unlock copied items
+                    'price_tier': item.price_tier,
+                    'estimated_cost': item.estimated_cost,
+                    'transport_mode_to_next': item.transport_mode_to_next,
+                    'travel_time_to_next': item.travel_time_to_next,
+                    'travel_distance_to_next': item.travel_distance_to_next,
+                })
+
+        return TripRepository.get_by_id(new_trip.trip_id)
 
     @staticmethod
     def finalize_trip(trip_id: int) -> Optional[Trip]:
