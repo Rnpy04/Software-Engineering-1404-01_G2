@@ -1,40 +1,104 @@
+# services:
+#   gateway:
+#     image: nginx:alpine
+#     ports:
+#       - "${TEAM_PORT}:80"
+#     volumes:
+#       - ./gateway.conf:/etc/nginx/conf.d/default.conf:ro
+#     environment:
+#       - CORE_BASE_URL=http://core:8000
+#     networks:
+#       - app404
+#   #   depends_on:
+#   #     - frontend
+#   #     - backend
+
+#   # frontend:
+#   #   image: traefik/whoami
+#   #   command: ["-port=5173"]
+#   #   networks:
+#   #     - app404
+
+#   # backend:
+#   #   image: traefik/whoami
+#   #   command: ["-port=3000"]
+#   #   networks:
+#   #     - app404
+#   db:
+#     image: postgres:15-alpine
+#     environment:
+#       - POSTGRES_USER=postgres
+#       - POSTGRES_PASSWORD=@AnAh0809%  # یک پسورد ساده بدون % بگذارید
+#       - POSTGRES_DB=wiki_db
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     networks:
+#       - app404
+#   backend:
+#     build: .
+#     env_file:
+#       - .env  # این خط باعث می‌شود TEAM6_DATABASE_URL خوانده شود
+#     # extra_hosts:
+#     #   - "host.docker.internal:host-gateway" # اجازه اتصال به دیتابیس ویندوز
+
+#     depends_on:
+#       - db
+#     networks:
+#       - app404
+# networks:
+#   app404:
+#     external: true
+#     name: app404_net
+
+# volumes:
+#   postgres_data:
 services:
+  # دروازه ورود (Nginx)
   gateway:
     image: nginx:alpine
     ports:
       - "${TEAM_PORT}:80"
     volumes:
       - ./gateway.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - core
+    networks:
+      - app404_net
+
+  # دیتابیس
+  db:
+    image: postgres:15-alpine
+    container_name: team6-db
     environment:
-      - CORE_BASE_URL=http://core:8000
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=wiki_db
     networks:
-      - app404
-  #   depends_on:
-  #     - frontend
-  #     - backend
+      - app404_net
 
-  # frontend:
-  #   image: traefik/whoami
-  #   command: ["-port=5173"]
-  #   networks:
-  #     - app404
-
-  # backend:
-  #   image: traefik/whoami
-  #   command: ["-port=3000"]
-  #   networks:
-  #     - app404
-  backend:
-    build: .
+  # برنامه اصلی (جنگو)
+  core:
+    image: python:3.11-slim
+    build: 
+      context: ..          # بیلد کردن از پوشه اصلی پروژه
+      dockerfile: Dockerfile  # استفاده از داکرفایل تیم 6
+    container_name: team6-core
+    working_dir: /app      # مسیر کاری داخل کانتینر
+    volumes:
+      - ..:/app
     env_file:
-      - .env  # این خط باعث می‌شود TEAM6_DATABASE_URL خوانده شود
-    extra_hosts:
-      - "host.docker.internal:host-gateway" # اجازه اتصال به دیتابیس ویندوز
+      - .env
+    depends_on:
+      - db
     networks:
-      - app404
-networks:
-  app404:
-    external: true
-    name: app404_net
+      - app404_net
+    command: >
+      sh -c "
+              python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
 
-    
+networks:
+  app404_net:
+    driver: bridge
